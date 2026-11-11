@@ -142,7 +142,64 @@ a4:{short:"Chương A4 – Bộ tiêu chí",name:"Chương A4: Giảm nguy cơ n
   {code:"16",title:"Quản lý đồ vải đúng quy định",max:2,kind:"manual",hint:"Quan sát trực tiếp quản lý đồ vải tại khoa.",levels:[{s:0,t:"Vi phạm 1 trong: đồ vải bẩn/dính máu không thu gom riêng; vận chuyển không túi chống thấm; NB dùng đồ vải bẩn, rách; đếm/xử lý đồ bẩn tại buồng bệnh"},{s:1,t:"Chỉ 1–2 trường hợp đồ vải chưa đạt (rách, thiếu cúc, chưa kiểm tra kỹ); chưa thay đồ vải đúng tần suất (1 lần/ngày)"},{s:2,t:"Mọi NB mặc đồ vải BV sạch, nguyên vẹn; kiểm tra trước cấp phát; không đếm tại buồng bệnh; đồ dính máu/dịch cô lập, túi chống thấm; thay định kỳ"}]},
   {code:"17",title:"Đảm bảo vệ sinh môi trường đúng quy định",max:2,kind:"count",hint:"Kiểm tra ngẫu nhiên 5 nhóm: hành lang/phòng máy; xe tiêm/xe thủ thuật; cửa/sàn/trần/quạt; bàn can thiệp/thủ thuật; thiết bị, máy móc.",counter:{label:"Số nhóm sạch (trong 5)",max:5,t1:4},levels:[{s:0,t:"≥2 vị trí có vết bẩn nhìn rõ; xe tiêm/bàn can thiệp dính máu, dịch; thiết bị có vết bẩn gây nguy cơ; hành lang/phòng máy không vệ sinh"},{s:1,t:"Chỉ 1/5 vị trí còn vết bẩn nhẹ làm sạch được"},{s:2,t:"Cả 5 nhóm sạch, không vết bẩn nhìn thấy"}]}]}]}
 };
-for(const f of Object.values(FORMS)){f.items=[];f.sections.forEach((s,si)=>s.items.forEach(it=>{it.sec=si;f.items.push(it)}));f.max=f.items.reduce((a,b)=>a+b.max,0);}
+const cl=o=>JSON.parse(JSON.stringify(o));
+const fin=f=>{f.items=[];f.sections.forEach((s,si)=>s.items.forEach(it=>{it.sec=si;f.items.push(it)}));f.max=f.items.filter(i=>!i.defNa).reduce((a,b)=>a+b.max,0)};
+fin(FORMS.bm02a);
+const own=c=>cl(FORMS.bm02a.items.find(i=>i.code===c));
+/* Phiếu khối nội BM.02b: dùng lại các mục giống khối ngoại, thêm mục riêng của khối nội */
+FORMS.bm02b={short:"BM.02b – Khối nội",name:"Phiếu kiểm tra KSNK khối nội (BM.02b.KSNK.05)",declared:84,
+ sections:[
+ {id:"I",title:"1. Cơ sở vật chất",items:[
+  own("1.1"),
+  {code:"1.2",title:"Trang thiết bị vệ sinh môi trường",max:4,kind:"sum",subs:subs(["Có khu vực lưu giữ trang thiết bị vệ sinh môi trường","Đủ cơ số trang thiết bị (xe, chổi lau, xô/chậu, tải lau, khăn) như quy định trên xe vệ sinh","Đủ hóa chất, còn hạn sử dụng","Có biển báo sàn ướt, bảng hướng dẫn vệ sinh bề mặt"])},
+  {code:"1.3",title:"Trang thiết bị quản lý chất thải",max:3,kind:"sum",subs:subs(["Khu vực lưu giữ chất thải tạm thời","Đủ thùng chất thải theo quy định bệnh viện","Bảng hướng dẫn phân loại rác"])},
+  {code:"1.4",title:"Trang thiết bị quản lý chất thải trên xe tiêm",max:2,kind:"sum",subs:subs(["Xe tiêm đủ thùng/túi phân loại rác thải (trắng, vàng, xanh)","Xe tiêm có hộp an toàn kháng thủng"])},
+  {code:"1.5",title:"Trang thiết bị khử khuẩn tiệt khuẩn (khoa CÓ khu vực làm sạch sơ bộ/KKTK)",max:5,kind:"sum",optional:true,defNa:false,hint:"Chỉ áp dụng cho khoa có khu vực làm sạch sơ bộ/khử khuẩn tiệt khuẩn dụng cụ sau sử dụng.",subs:subs(["Có khu vực ngâm dụng cụ sau sử dụng","Thùng ngâm dụng cụ đúng tiêu chuẩn","Hóa chất KKSB đầy đủ, còn hạn sử dụng (nếu có)","Bảng hướng dẫn sử dụng hóa chất KKSB (nếu có)","Có khu vực/tủ lưu giữ dụng cụ sạch và dụng cụ vô khuẩn"])},
+  {code:"1.6",title:"Khoa KHÔNG có khu vực làm sạch sơ bộ",max:5,kind:"sum",optional:true,defNa:true,hint:"Chỉ áp dụng khi khoa không có khu vực làm sạch sơ bộ. Bỏ chọn \"Không áp dụng\" để chấm mục này và tắt mục 1.5.",subs:[S("Dụng cụ sau sử dụng được để vào thùng (có chứa nước) có nắp đậy trước khi mang xuống khoa KSNK",5)]},
+  {code:"1.7",title:"Trang thiết bị quản lý đồ vải",max:3,kind:"sum",subs:subs(["Có khu vực lưu giữ đồ vải (sạch - bẩn)","Có túi đựng đồ vải chuyên dụng","Có xe vận chuyển chuyên dụng"])}]},
+ {id:"II",title:"2. Quy định, quy trình",items:[
+  own("2.1"),
+  {code:"2.2",title:"Các quy trình phòng ngừa lây nhiễm",max:2,kind:"sum",subs:subs(["QT xử lý bệnh nhân mắc bệnh truyền nhiễm cấp tính (COVID-19, cúm A-H5N1…)","QT xử lý phơi nhiễm do tai nạn vật sắc nhọn"])},
+  {code:"2.3",title:"Các quy trình phòng ngừa nhiễm khuẩn bệnh viện",max:4,kind:"sum",hint:"Hướng dẫn phòng ngừa NKBV, mỗi loại 1 điểm.",subs:subs(["Hướng dẫn phòng ngừa NKVM","Hướng dẫn phòng ngừa NKH","Hướng dẫn phòng ngừa NKP","Hướng dẫn phòng ngừa NKTN"])},
+  own("2.4")]},
+ {id:"III",title:"3. Thực hành KSNK (nhân viên)",items:[
+  {code:"3.1",title:"Vệ sinh tay thường quy: thời điểm",max:5,kind:"sum",hint:"Hỏi 01 nhân viên. Tick các ý trả lời đúng.",subs:cl(FORMS.bm02a.items.find(i=>i.code==="3.1").subs)},
+  {code:"3.2",title:"Thời điểm không sử dụng găng",max:7,kind:"sum",hint:"Hỏi 01 nhân viên. Tick các ý trả lời đúng.",subs:cl(FORMS.bm02a.items.find(i=>i.code==="3.2").subs)},
+  {code:"3.3",title:"Kỹ thuật VST thường quy",max:6,kind:"sum",hint:"Yêu cầu 01 nhân viên thực hiện. Tick các bước đúng.",subs:cl(FORMS.bm02a.items.find(i=>i.code==="3.3").subs)},
+  {code:"3.4",title:"Các nhóm chất thải cần phân loại riêng (nêu ví dụ)",max:6,kind:"sum",subs:cl(FORMS.bm02a.items.find(i=>i.code==="3.4").subs)},
+  {code:"3.5",title:"Phòng ngừa lây nhiễm nghề nghiệp ở nhân viên y tế",max:2,kind:"sum",subs:subs(["Danh sách NVYT được tiêm viêm gan B gần nhất","NVYT mắc bệnh truyền nhiễm nhóm A không chăm sóc BN"])}]},
+ {id:"IV",title:"4. Thực hành KSNK (tại đơn vị)",items:[own("4.1"),own("4.2"),own("4.3"),own("4.4")]}]};
+/* Phiếu đơn vị can thiệp BM.02d (75 điểm) */
+const sb=c=>cl(FORMS.bm02a.items.find(i=>i.code===c).subs);
+FORMS.bm02d={short:"BM.02d – Đơn vị can thiệp",name:"Phiếu kiểm tra KSNK đơn vị can thiệp (BM.02d.KSNK.05)",declared:75,
+ sections:[
+ {id:"I",title:"1. Cơ sở vật chất phục vụ KSNK",items:[
+  {code:"1.1",title:"Phân định rõ ràng các khu vực bẩn, sạch, vô khuẩn",max:3,kind:"sum",subs:subs(["Các khu vực được ngăn cách bằng cửa kín","Có cảnh báo khi di chuyển giữa các khu vực","Cửa phòng can thiệp luôn đóng kín"])},
+  {code:"1.2",title:"Phòng can thiệp đảm bảo tiêu chuẩn",max:3,kind:"sum",subs:subs(["Nhiệt độ luôn duy trì dưới 25°C","Máy hút ẩm bật liên tục và đổ nước thường xuyên","Kết quả cấy vi sinh định kỳ đạt tiêu chuẩn"])},
+  {code:"1.3",title:"Trang thiết bị vệ sinh tay ngoại khoa",max:3,kind:"sum",subs:subs(["Bồn rửa tay tự động hoặc gạt chân","Hóa chất vệ sinh tay ngoại khoa","Bầu lọc nước RO còn hạn"])},
+  {code:"1.4",title:"Trang thiết bị khử khuẩn tiệt khuẩn",max:3,kind:"sum",subs:subs(["Thùng ngâm hóa chất KKMDC và KKSB đúng tiêu chuẩn; hóa chất KK đầy đủ, còn hạn","Có tủ lưu giữ dụng cụ sạch và dụng cụ vô khuẩn riêng","Có khu vực ngâm KK và hướng dẫn ngâm KK"])},
+  {code:"1.5",title:"Trang thiết bị vệ sinh môi trường",max:3,kind:"sum",subs:subs(["Có khu vực lưu giữ trang thiết bị vệ sinh môi trường","Đủ cơ số trang thiết bị như quy định trên xe vệ sinh","Đủ hóa chất, còn hạn sử dụng theo quy định trên xe vệ sinh"])},
+  {code:"1.6",title:"Trang thiết bị quản lý chất thải",max:3,kind:"sum",subs:subs(["Có khu vực lưu giữ chất thải tạm thời","Đủ thùng chất thải theo quy định bệnh viện","Có poster hướng dẫn phân loại rác"])}]},
+ {id:"II",title:"2. Quy định, quy trình",items:[
+  {code:"2.1",title:"Các quy định đảm bảo sạch, vô khuẩn tại phòng can thiệp",max:2,kind:"sum",subs:subs(["Quy định về trang phục, di chuyển, luồng đi trong phòng can thiệp","Quy định về nhiệt độ, độ ẩm trong phòng can thiệp"])},
+  {code:"2.2",title:"Các quy trình tuân thủ KSNK",max:8,kind:"sum",subs:subs(["Quy trình vệ sinh tay thường quy","Quy trình vệ sinh tay ngoại khoa","Hướng dẫn phòng ngừa chuẩn","Quy trình khử khuẩn sơ bộ, khử khuẩn mức độ cao","Quy trình tiệt khuẩn dụng cụ kém chịu nhiệt, dụng cụ chịu nhiệt","Quy trình vệ sinh môi trường","Quy định phân loại rác thải y tế","Quy trình xử lý đồ vải"])},
+  {code:"2.3",title:"Các quy trình phòng ngừa lây nhiễm",max:2,kind:"sum",subs:subs(["Quy trình can thiệp bệnh nhân mắc bệnh truyền nhiễm nhóm A","Quy trình xử lý phơi nhiễm do tai nạn vật sắc nhọn"])}]},
+ {id:"III",title:"3. Kiến thức của NVYT về KSNK",items:[
+  {code:"3.1",title:"Thời điểm VST thường quy",max:5,kind:"sum",hint:"Hỏi 1 nhân viên. Tick các ý trả lời đúng.",subs:sb("3.1")},
+  {code:"3.2",title:"Thời điểm không sử dụng găng",max:7,kind:"sum",hint:"Hỏi 1 nhân viên. Tick các ý trả lời đúng.",subs:sb("3.2")},
+  {code:"3.3",title:"Kỹ thuật VST thường quy",max:6,kind:"sum",hint:"Yêu cầu 1 nhân viên thực hiện. Tick các bước đúng.",subs:sb("3.3")},
+  {code:"3.4",title:"Kỹ thuật VST ngoại khoa",max:3,kind:"sum",subs:subs(["Đánh kẽ móng tay bằng bàn chải","Vệ sinh tay thường quy qua khuỷu 5cm","Vệ sinh tay thường quy dưới khuỷu 5cm"])},
+  {code:"3.5",title:"Các nhóm chất thải cần phân loại riêng (nêu ví dụ)",max:6,kind:"sum",subs:sb("3.4")},
+  {code:"3.6",title:"Phương tiện, mã màu cô lập chất thải",max:6,kind:"sum",subs:sb("3.5")}]},
+ {id:"IV",title:"4. Thực hành KSNK",items:[
+  {code:"4.1",title:"Khử khuẩn tiệt khuẩn",max:2,kind:"sum",subs:subs(["Dụng cụ tiệt khuẩn còn hạn sử dụng, không có vết rách trên bao bì","Thùng ngâm hóa chất khử khuẩn ghi rõ tên hóa chất, ngày pha và hạn sử dụng"])},
+  {code:"4.2",title:"Phân loại chất thải y tế",max:5,kind:"bins",hint:"Kiểm tra ngẫu nhiên 5 thùng rác, phân loại sai 1 thùng trừ 1 điểm.",subs:[],counter:{label:"Số thùng phân loại sai (trong 5)",max:5}},
+  {code:"4.3",title:"Vệ sinh môi trường",max:5,kind:"sum",subs:subs(["Hành lang, phòng máy sạch sẽ, không có vết bẩn nhìn thấy","Bề mặt xe tiêm, xe thủ thuật không dính máu, vết bẩn nhìn thấy","Cửa, sàn nhà, trần nhà, quạt không có vết bẩn làm sạch được","Bàn can thiệp không dính máu hoặc vết bẩn làm sạch được","Thiết bị máy móc không có vết bẩn nhìn thấy và làm sạch được"])}]}]};
+FORMS.bm02d.code="Mã biểu mẫu: BM.02d.KSNK.05";FORMS.bm02d.doctitle="PHIẾU KIỂM TRA CÔNG TÁC KIỂM SOÁT NHIỄM KHUẨN ĐƠN VỊ CAN THIỆP";
+FORMS.bm02a.code="Mã biểu mẫu: BM.02a.KSNK.05";FORMS.bm02a.doctitle="PHIẾU KIỂM TRA CÔNG TÁC KIỂM SOÁT NHIỄM KHUẨN KHỐI NGOẠI";
+FORMS.bm02b.code="Mã biểu mẫu: BM.02b.KSNK.05";FORMS.bm02b.doctitle="PHIẾU KIỂM TRA CÔNG TÁC KIỂM SOÁT NHIỄM KHUẨN KHỐI NỘI";
+FORMS.a4.code="Chương A4 - Bộ tiêu chí chất lượng";FORMS.a4.doctitle="PHIẾU ĐÁNH GIÁ CHƯƠNG A4: GIẢM NGUY CƠ NHIỄM KHUẨN LIÊN QUAN ĐẾN CHĂM SÓC Y TẾ";
+for(const f of Object.values(FORMS))fin(f);
 
 /* ===== TRẠNG THÁI & LƯU TRỮ ===== */
 const KEY="ksnk_v1";
@@ -159,7 +216,7 @@ const fmt=n=>(Math.round(n*10)/10).toString().replace(".",",");
 const rec=()=>ST.recs.find(r=>r.id===ST.cur);
 const form=()=>FORMS[rec().form];
 function newRec(f){const r={id:"r"+Date.now().toString(36),form:f,unit:"",date:today(),inspector:"",items:{},nx:"",dn:"",upd:Date.now()};ST.recs.unshift(r);ST.cur=r.id;ST.tab="info";ST.view="check";save();render();window.scrollTo(0,0)}
-const stOf=(r,it)=>{const k=r.form+"|"+it.code;return r.items[k]||(r.items[k]={c:[],n:null,s:null,note:""})};
+const stOf=(r,it)=>{const k=r.form+"|"+it.code;return r.items[k]||(r.items[k]={c:[],n:null,s:null,note:"",na:!!it.defNa})};
 
 /* ===== TÍNH ĐIỂM ===== */
 function auto(it,st){
@@ -170,14 +227,16 @@ function auto(it,st){
   if(it.kind==="count"){if(st.n==null)return null;const c=it.counter;return st.n>=c.max?2:st.n>=c.t1?1:0}
   return null}
 const score=(r,it)=>{const v=stOf(r,it).s;return v==null?0:v};
-function totals(r){const f=FORMS[r.form];let t=0,done=0;const secs=f.sections.map(()=>({s:0,m:0,d:0,n:0}));
-  f.items.forEach(it=>{const st=stOf(r,it),v=st.s==null?0:st.s;t+=v;if(st.s!=null)done++;const o=secs[it.sec];o.s+=v;o.m+=it.max;o.n++;if(st.s!=null)o.d++});
-  return{t,max:f.max,done,n:f.items.length,secs,pct:f.max?t/f.max*100:0}}
+function totals(r){const f=FORMS[r.form];let t=0,done=0,mx=0,cnt=0;const secs=f.sections.map(()=>({s:0,m:0,d:0,n:0}));
+  f.items.forEach(it=>{const st=stOf(r,it);if(st.na)return;const v=st.s==null?0:st.s;t+=v;mx+=it.max;cnt++;if(st.s!=null)done++;const o=secs[it.sec];o.s+=v;o.m+=it.max;o.n++;if(st.s!=null)o.d++});
+  return{t,max:mx,done,n:cnt,secs,pct:mx?t/mx*100:0}}
 
 /* ===== GIAO DIỆN ===== */
 function badgeCls(v,m,answered){if(!answered)return"badge";return v>=m?"badge full":v<=0?"badge zero":"badge part"}
 function itemCard(it,r){
   const st=stOf(r,it),ans=st.s!=null,v=ans?st.s:0,id=`it-${it.code.replace(".","_")}`;
+  const naBox=it.optional?`<label class="sub" style="margin-top:10px"><input type="checkbox" data-a="na" ${st.na?"checked":""}><span>Không áp dụng cho đơn vị này (không tính điểm)</span></label>`:"";
+  if(st.na)return `<section class="card" id="${id}" data-code="${it.code}" style="opacity:.8"><div class="item-h"><span class="code">${esc(it.code)}</span><h3>${esc(it.title)}</h3><span class="badge">N/A</span></div>${it.hint?`<p class="hint">${esc(it.hint)}</p>`:""}${naBox}</section>`;
   let h=`<section class="card" id="${id}" data-code="${it.code}"><div class="item-h"><span class="code">${esc(it.code)}</span><h3>${esc(it.title)}</h3><span class="${badgeCls(v,it.max,ans)}">${ans?fmt(v):"–"}/${it.max}</span></div>`;
   if(it.hint)h+=`<p class="hint">${esc(it.hint)}</p>`;
   if(it.subs)h+=`<div class="subs">`+it.subs.map((s,i)=>`<label class="sub"><input type="checkbox" data-a="chk" data-i="${i}" ${st.c[i]?"checked":""}><span>${esc(s.t)}${s.w!==1?` <small>(${s.w}đ)</small>`:""}</span></label>`).join("")+`</div>`;
@@ -190,7 +249,7 @@ function itemCard(it,r){
   }else{
     h+=`<div class="row"><span style="flex:1;font-size:14px">Điểm đạt <small style="color:var(--mute)">(tự tính theo ô đã tick, có thể chỉnh)</small></span><span class="step"><button data-a="sc" data-d="-0.5" aria-label="Giảm điểm">−</button><output>${ans?fmt(v):"–"}</output><button data-a="sc" data-d="0.5" aria-label="Tăng điểm">+</button></span></div>`;
   }
-  h+=`<textarea class="note" data-a="note" rows="1" placeholder="Ghi chú / tồn tại phát hiện…">${esc(st.note)}</textarea></section>`;
+  h+=naBox+`<textarea class="note" data-a="note" rows="1" placeholder="Ghi chú / tồn tại phát hiện…">${esc(st.note)}</textarea></section>`;
   return h}
 
 function homeView(){
@@ -225,7 +284,7 @@ function checkView(){
   h+=`<div class="bar"><div>${ix>0?`<button class="btn" data-a="go" data-d="-1">‹ Trước</button>`:""}${ix<order.length-1?`<button class="btn pri" data-a="go" data-d="1">${ix===order.length-2?"Xem kết quả ›":"Tiếp ›"}</button>`:`<button class="btn pri" data-a="copy">Sao chép báo cáo</button>`}</div></div>`;
   return h}
 
-function lossList(r,f){return f.items.filter(it=>{const st=stOf(r,it);return st.s==null||st.s<it.max})}
+function lossList(r,f){return f.items.filter(it=>{const st=stOf(r,it);return !st.na&&(st.s==null||st.s<it.max)})}
 /* Chi tiết điểm bị trừ: số điểm mất + lý do (ý chưa đạt, số thùng sai, mức chấm) */
 function lossInfo(r,it){const st=stOf(r,it),lost=it.max-(st.s==null?0:st.s),why=[];
   if(st.s==null){why.push("Chưa chấm điểm")}
@@ -262,7 +321,7 @@ function resultView(r,f,t){
   if(!L.length)h+=`<div class="card"><p class="empty">Đạt điểm tối đa ở mọi tiêu chí.</p></div>`;
   L.forEach(x=>{const it=x.it,st=x.st;h+=`<div class="card" style="border-left:5px solid var(--bad)"><div class="item-h"><span class="code">${esc(it.code)}</span><h3>${esc(it.title)}</h3><span class="badge zero">−${fmt(x.lost)}</span></div><p class="hint">Đạt ${st.s==null?"–":fmt(st.s)}/${it.max} điểm · ${esc(f.sections[it.sec].id)}</p>${x.why.map(w=>`<p style="font-size:14px;margin-top:6px">${esc(w)}</p>`).join("")}${st.note?`<p style="font-size:14px;margin-top:6px;padding:7px 10px;background:var(--warn-soft);color:var(--warn);border-radius:8px">Ghi chú: ${esc(st.note)}</p>`:""}</div>`});
   h+=`<p class="sec-title">Chi tiết điểm</p><div class="card scroll"><table><thead><tr><th>TT</th><th>Nội dung</th><th class="n">Chuẩn</th><th class="n">Đạt</th></tr></thead><tbody>`;
-  f.sections.forEach((s,i)=>{h+=`<tr><td colspan="2"><b>${esc(s.title)}</b></td><td class="n"><b>${fmt(t.secs[i].m)}</b></td><td class="n"><b>${fmt(t.secs[i].s)}</b></td></tr>`;s.items.forEach(it=>{const st=stOf(r,it);h+=`<tr><td>${esc(it.code)}</td><td>${esc(it.title)}</td><td class="n">${it.max}</td><td class="n">${st.s==null?"–":fmt(st.s)}</td></tr>`})});
+  f.sections.forEach((s,i)=>{h+=`<tr><td colspan="2"><b>${esc(s.title)}</b></td><td class="n"><b>${fmt(t.secs[i].m)}</b></td><td class="n"><b>${fmt(t.secs[i].s)}</b></td></tr>`;s.items.forEach(it=>{const st=stOf(r,it);if(st.na)return;h+=`<tr><td>${esc(it.code)}</td><td>${esc(it.title)}</td><td class="n">${it.max}</td><td class="n">${st.s==null?"–":fmt(st.s)}</td></tr>`})});
   h+=`<tr><td colspan="2"><b>Tổng điểm</b></td><td class="n"><b>${fmt(t.max)}</b></td><td class="n"><b>${fmt(t.t)}</b></td></tr></tbody></table></div>`;
   if(!r.nx&&t.done){r.nx=autoNx(r);save()}
   h+=`<div class="card"><label class="f" for="nx" style="margin-top:0">Nhận xét và kết luận của cán bộ kiểm tra</label><div class="row" style="margin-top:6px"><button class="btn sm" data-a="nx">Cập nhật nhận xét từ kết quả</button></div><textarea class="note" id="nx" data-a="fld" data-k="nx" rows="3">${esc(r.nx)}</textarea><label class="f" for="dn">Đề nghị của đơn vị</label><textarea class="note" id="dn" data-a="fld" data-k="dn" rows="3">${esc(r.dn)}</textarea></div>`;
@@ -285,12 +344,12 @@ function reportText(r){const f=FORMS[r.form],t=totals(r);
 /* Xuất phiếu thành file Word (.doc dạng HTML, Word mở trực tiếp) */
 function docBody(r){const f=FORMS[r.form],t=totals(r),e=esc,nl=s=>e(s).replace(/\n/g,"<br>");
   const isB=r.form==="bm02a";
-  let h=`<table width="100%" style="border:none;border-collapse:collapse"><tr><td style="border:none;width:50%;text-align:center"><b>BỆNH VIỆN ĐẠI HỌC Y HÀ NỘI</b><br><b>KHOA KIỂM SOÁT NHIỄM KHUẨN</b></td><td style="border:none;text-align:right;vertical-align:top"><i>${isB?"BM.02a.KSNK.05":"Chương A4 - Bộ tiêu chí chất lượng"}</i></td></tr></table>`;
-  h+=`<p style="text-align:center;font-size:14pt;margin:12pt 0 6pt"><b>${isB?"PHIẾU KIỂM TRA CÔNG TÁC KIỂM SOÁT NHIỄM KHUẨN KHỐI NGOẠI":"PHIẾU ĐÁNH GIÁ CHƯƠNG A4: GIẢM NGUY CƠ NHIỄM KHUẨN LIÊN QUAN ĐẾN CHĂM SÓC Y TẾ"}</b></p>`;
+  let h=`<table width="100%" style="border:none;border-collapse:collapse"><tr><td style="border:none;width:50%;text-align:center"><b>BỆNH VIỆN ĐẠI HỌC Y HÀ NỘI</b><br><b>KHOA KIỂM SOÁT NHIỄM KHUẨN</b></td><td style="border:none;text-align:right;vertical-align:top"><i>${e(f.code)}</i></td></tr></table>`;
+  h+=`<p style="text-align:center;font-size:14pt;margin:12pt 0 6pt"><b>${e(f.doctitle)}</b></p>`;
   h+=`<p>- Đơn vị được kiểm tra: <b>${e(r.unit||"..........................................")}</b><br>- Thời gian kiểm tra: <b>${vdate(r.date)}</b>${r.inspector?`<br>- Người kiểm tra: ${e(r.inspector)}`:""}</p>`;
   h+=`<table border="1" cellspacing="0" cellpadding="4" width="100%" style="border-collapse:collapse;border:1px solid #000"><tr style="background:#e8e8e8"><th width="6%">TT</th><th>Nội dung kiểm tra</th><th width="9%">Điểm chuẩn</th><th width="9%">Điểm đạt</th><th width="22%">Ghi chú</th></tr>`;
   f.sections.forEach((sec,i)=>{h+=`<tr style="background:#f3f3f3"><td></td><td><b>${e(sec.title.toUpperCase())}</b></td><td align="center"><b>${fmt(t.secs[i].m)}</b></td><td align="center"><b>${fmt(t.secs[i].s)}</b></td><td></td></tr>`;
-    sec.items.forEach(it=>{const st=stOf(r,it);let c=`<b>${e(it.title)}</b>`;
+    sec.items.forEach(it=>{const st=stOf(r,it);if(st.na)return;let c=`<b>${e(it.title)}</b>`;
       if(it.subs)c+=it.subs.map((s,k)=>`<br>${st.c[k]?"☑":"☐"} ${e(s.t)}`).join("");
       if(it.kind==="bins"&&st.n!=null)c+=`<br>Số thùng phân loại sai: ${st.n}/5`;
       if(it.kind==="count"&&st.n!=null)c+=`<br>${e(it.counter.label)}: ${st.n}`;
@@ -320,14 +379,14 @@ function docxXml(r){const f=FORMS[r.form],t=totals(r),isB=r.form==="bm02a";
   const row=cs=>`<w:tr>${cs}</w:tr>`;
   let b="";
   b+=para("BỆNH VIỆN ĐẠI HỌC Y HÀ NỘI\nKHOA KIỂM SOÁT NHIỄM KHUẨN",{b:1,jc:"center"});
-  b+=para(isB?"Mã biểu mẫu: BM.02a.KSNK.05":"Chương A4 - Bộ tiêu chí chất lượng",{i:1,jc:"right"});
-  b+=para(isB?"PHIẾU KIỂM TRA CÔNG TÁC KIỂM SOÁT NHIỄM KHUẨN KHỐI NGOẠI":"PHIẾU ĐÁNH GIÁ CHƯƠNG A4: GIẢM NGUY CƠ NHIỄM KHUẨN LIÊN QUAN ĐẾN CHĂM SÓC Y TẾ",{b:1,jc:"center",sz:28,after:120});
+  b+=para(f.code,{i:1,jc:"right"});
+  b+=para(f.doctitle,{b:1,jc:"center",sz:28,after:120});
   b+=para("- Đơn vị được kiểm tra: "+(r.unit||".........................................."));
   b+=para("- Thời gian kiểm tra: "+vdate(r.date));
   if(r.inspector)b+=para("- Người kiểm tra: "+r.inspector);
   let tb=row(["TT","Nội dung kiểm tra","Điểm chuẩn","Điểm đạt","Ghi chú"].map((h,i)=>cell(W[i],para(h,{b:1,jc:"center"}),{fill:"E8E8E8"})).join(""));
   f.sections.forEach((sec,i)=>{tb+=row(cell(W[0],para(""),{fill:"F3F3F3"})+cell(W[1],para(sec.title.toUpperCase(),{b:1}),{fill:"F3F3F3"})+cell(W[2],para(fmt(t.secs[i].m),{b:1,jc:"center"}),{fill:"F3F3F3"})+cell(W[3],para(fmt(t.secs[i].s),{b:1,jc:"center"}),{fill:"F3F3F3"})+cell(W[4],para(""),{fill:"F3F3F3"}));
-    sec.items.forEach(it=>{const st=stOf(r,it);let c=para(it.title,{b:1});
+    sec.items.forEach(it=>{const st=stOf(r,it);if(st.na)return;let c=para(it.title,{b:1});
       if(it.subs)it.subs.forEach((s,k)=>c+=para((st.c[k]?"☑ ":"☐ ")+s.t));
       if(it.kind==="bins"&&st.n!=null)c+=para(`Số thùng phân loại sai: ${st.n}/5`);
       if(it.kind==="count"&&st.n!=null)c+=para(`${it.counter.label}: ${st.n}`);
@@ -364,7 +423,7 @@ function copyWordHtml(r){const html=docBody(r),txt=reportText(r);
   const fb=()=>copy(txt,"Đã sao chép dạng văn bản");
   try{navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([txt],{type:"text/plain"})})]).then(()=>toast("Đã sao chép phiếu, mở Word và dán (Ctrl+V)"),fb)}catch(e){fb()}}
 function reportTSV(r){const f=FORMS[r.form];let s="TT\tNội dung\tĐiểm chuẩn\tĐiểm đạt\tGhi chú\n";
-  f.sections.forEach(sec=>sec.items.forEach(it=>{const st=stOf(r,it);s+=`${it.code}\t${it.title}\t${it.max}\t${st.s==null?"":st.s}\t${(st.note||"").replace(/\s+/g," ")}\n`}));
+  f.sections.forEach(sec=>sec.items.forEach(it=>{const st=stOf(r,it);if(st.na)return;s+=`${it.code}\t${it.title}\t${it.max}\t${st.s==null?"":st.s}\t${(st.note||"").replace(/\s+/g," ")}\n`}));
   const t=totals(r);return s+`\tTổng điểm\t${t.max}\t${t.t}\t`}
 function summaryTSV(){let s="Đơn vị\tBiểu mẫu\tNgày\tNgười kiểm tra\tĐiểm đạt\tĐiểm chuẩn\t%\tĐã chấm\n";
   ST.recs.slice().reverse().forEach(r=>{const t=totals(r);s+=[r.unit,FORMS[r.form].short,vdate(r.date),r.inspector,t.t,t.max,Math.round(t.pct*10)/10,t.done+"/"+t.n].join("\t")+"\n"});return s}
@@ -403,6 +462,11 @@ document.addEventListener("click",e=>{
   r.upd=Date.now();save();refreshItem(it.code)});
 document.addEventListener("change",e=>{
   const x=e.target,a=x.dataset&&x.dataset.a;if(!a)return;
+  if(a==="na"){const card=x.closest("[data-code]"),r=rec(),it=form().items.find(i=>i.code===card.dataset.code),st=stOf(r,it);st.na=x.checked;
+    /* 1.5 và 1.6 là hai trường hợp loại trừ nhau: bật mục này thì tắt mục kia */
+    const pair=r.form==="bm02b"&&(it.code==="1.5"?"1.6":it.code==="1.6"?"1.5":null);
+    if(pair&&!st.na){const o=form().items.find(i=>i.code===pair);stOf(r,o).na=true;refreshItem(pair)}
+    r.upd=Date.now();save();refreshItem(it.code);return}
   if(a==="chk"){const card=x.closest("[data-code]"),r=rec(),it=form().items.find(i=>i.code===card.dataset.code),st=stOf(r,it);
     st.c[+x.dataset.i]=x.checked;
     for(let i=0;i<it.subs.length;i++)st.c[i]=!!st.c[i];
