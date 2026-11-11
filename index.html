@@ -1,0 +1,418 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a6b6b"><style>[hidden]{display:none!important}:root{color-scheme:light}</style><title>Kiểm tra KSNK</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: ứng dụng một cột cho điện thoại; thanh trên cố định (điểm), chip chuyển mục, thẻ từng tiêu chí, thanh dưới Trước/Tiếp */
+:root{
+  --bg:#eef3f2; --card:#ffffff; --ink:#14282a; --mute:#5b6f71; --line:#d5e0df;
+  --accent:#0a6b6b; --accent-ink:#ffffff; --accent-soft:#d9eeec;
+  --ok:#17803d; --ok-soft:#dcf3e3; --warn:#a15c00; --warn-soft:#fbecd0; --bad:#b4261e; --bad-soft:#fbdedb;
+  --font:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1819; --card:#152426; --ink:#e4f0ef; --mute:#93aaab; --line:#2a3f41;
+  --accent:#4cc3bd; --accent-ink:#06201f; --accent-soft:#1b3a3a;
+  --ok:#5fd18a; --ok-soft:#1a3827; --warn:#f0b04d; --warn-soft:#3b2d12; --bad:#ff8e84; --bad-soft:#40201e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1819; --card:#152426; --ink:#e4f0ef; --mute:#93aaab; --line:#2a3f41;
+  --accent:#4cc3bd; --accent-ink:#06201f; --accent-soft:#1b3a3a;
+  --ok:#5fd18a; --ok-soft:#1a3827; --warn:#f0b04d; --warn-soft:#3b2d12; --bad:#ff8e84; --bad-soft:#40201e; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.45;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--accent)}
+.wrap{max-width:720px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0 96px}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--accent);color:var(--accent-ink);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.top-row{display:flex;align-items:center;gap:10px}
+.top h1{font-size:15px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .sub{font-size:12px;opacity:.85}
+.pill{background:var(--accent-ink);color:var(--accent);border-radius:999px;padding:3px 12px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ghost{background:transparent;border:1px solid currentColor;color:inherit;border-radius:8px;padding:6px 10px;font-size:13px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid color-mix(in srgb,var(--accent-ink) 45%,transparent);background:transparent;color:var(--accent-ink);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:500;white-space:nowrap}
+.chip[aria-current="true"]{background:var(--accent-ink);color:var(--accent);border-color:var(--accent-ink);font-weight:700}
+.chip small{opacity:.8;font-variant-numeric:tabular-nums}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;min-width:0}
+.sec-title{margin-top:18px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);font-weight:700}
+.item-h{display:flex;gap:10px;align-items:flex-start}
+.code{flex:none;background:var(--accent-soft);color:var(--accent);font-weight:700;border-radius:6px;padding:1px 7px;font-size:13px;font-variant-numeric:tabular-nums}
+.item-h h3{font-size:15px;font-weight:600;flex:1;min-width:0}
+.badge{flex:none;font-weight:700;font-size:13px;border-radius:6px;padding:1px 8px;font-variant-numeric:tabular-nums;background:var(--line);color:var(--mute)}
+.badge.full{background:var(--ok-soft);color:var(--ok)}.badge.part{background:var(--warn-soft);color:var(--warn)}.badge.zero{background:var(--bad-soft);color:var(--bad)}
+.hint{font-size:13px;color:var(--mute);margin-top:6px}
+.subs{display:grid;gap:6px;margin-top:10px}
+.sub{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;min-height:44px}
+.sub input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:var(--accent)}
+.sub span{min-width:0}
+.sub:has(input:checked){background:var(--ok-soft);border-color:var(--ok)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.step{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.step button{width:44px;height:44px;border:0;background:var(--accent-soft);color:var(--accent);font-size:22px;font-weight:700}
+.step output{min-width:52px;text-align:center;font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.lv{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.lv button{flex:1;min-width:64px;min-height:46px;border:2px solid var(--line);background:var(--card);border-radius:10px;font-weight:700;font-size:17px}
+.lv button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.lvtxt{font-size:13px;margin-top:8px;padding:8px 10px;background:var(--accent-soft);border-radius:8px}
+details{margin-top:8px;font-size:13px;color:var(--mute)}
+details summary{cursor:pointer;padding:4px 0}
+details li{margin:4px 0}
+.note{width:100%;margin-top:10px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 10px;resize:vertical;min-height:40px}
+label.f{display:block;margin-top:12px;font-size:13px;font-weight:600;color:var(--mute)}
+.in{display:block;width:100%;margin-top:4px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:11px 12px;font-size:16px}
+.bar{position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--card);border-top:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.bar>div{max-width:720px;margin:0 auto;display:flex;gap:10px}
+.btn{flex:1;min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-weight:600}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.dng{color:var(--bad);border-color:var(--bad)}
+.btn.sm{min-height:38px;flex:none;padding:0 14px;font-size:14px}
+.rec{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+.rec .meta{flex:1;min-width:0}.rec b{display:block;overflow-wrap:anywhere}
+.rec small{color:var(--mute)}
+.big{font-size:40px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.meter{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:8px}
+.meter i{display:block;height:100%;background:var(--accent)}
+.secrow{margin-top:12px}.secrow .l{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto}
+.loss{padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:14px;z-index:40}
+.empty{color:var(--mute);text-align:center;padding:24px 8px}
+.warn{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:12px}
+@media (prefers-reduced-motion:no-preference){.meter i{transition:width .25s}}
+</style>
+</head><body><div id="app" class="wrap"></div>
+<div id="toast" class="toast" hidden></div>
+<script>
+/* ===== DỮ LIỆU BIỂU MẪU ===== */
+const UNITS=["Khoa Khám chữa bệnh theo yêu cầu","Trung tâm Cấp cứu và Hồi sức tích cực","Trung tâm Gây mê hồi sức và Quản lý đau","Khoa Ngoại Thần kinh - Cột sống","Khoa Ngoại tổng hợp","Khoa Chấn thương chỉnh hình và Y học thể thao","Khoa Ngoại tiết niệu","Khoa Nam học và Y học giới tính","Trung tâm Ung bướu","Trung tâm Tai Mũi Họng và PTCOT","Khoa Răng Hàm Mặt","Khoa Mắt","Khoa Phẫu thuật tạo hình thẩm mỹ","Khoa Vi phẫu, tạo hình thẩm mỹ hàm mặt và laser","Khoa Ngoại Hậu môn - Đại trực tràng và Sàn chậu","Khoa Phụ sản","Khoa Nội tiêu hóa","Trung tâm Tim mạch","Khoa Nội Tiết","Khoa Hô hấp","Khoa Nội thận - Tiết niệu","Khoa Nội thần kinh","Khoa Cơ Xương Khớp","Khoa Bệnh nhiệt đới và CTGH","Khoa Nhi","Đơn vị Điều trị theo yêu cầu cơ sở Hoàng Mai","Khoa Phục hồi chức năng cơ sở Hoàng Mai"];
+const S=(t,w)=>({t,w:w||1});
+const subs=a=>a.map(x=>S(x));
+const FORMS={
+bm02a:{short:"BM.02a – Khối ngoại",name:"Phiếu kiểm tra KSNK khối ngoại (BM.02a.KSNK.05)",declared:90,
+ sections:[
+ {id:"I",title:"1. Cơ sở vật chất phục vụ KSNK",items:[
+  {code:"1.1",title:"Trang thiết bị vệ sinh tay",max:4,kind:"sum",hint:"Tại khu vực hành chính, chuyên môn, công cộng, nhà vệ sinh.",subs:subs(["Bồn rửa tay thường quy","Dung dịch VST / sát khuẩn tay nhanh","Khăn / giấy lau tay","Bảng hướng dẫn vệ sinh tay"])},
+  {code:"1.2",title:"Trang thiết bị khử khuẩn - tiệt khuẩn",max:5,kind:"sum",subs:subs(["Có khu vực ngâm dụng cụ sau sử dụng","Thùng ngâm dụng cụ đúng tiêu chuẩn","Hóa chất KKSB đầy đủ, còn hạn (nếu có)","Bảng hướng dẫn sử dụng hóa chất KKSB (nếu có)","Khu vực/tủ lưu giữ dụng cụ sạch và vô khuẩn"])},
+  {code:"1.3",title:"Đồ vải",max:3,kind:"sum",subs:subs(["Khu vực lưu giữ đồ vải (sạch – bẩn)","Túi đựng đồ vải chuyên dụng","Xe vận chuyển chuyên dụng"])},
+  {code:"1.4",title:"Trang thiết bị vệ sinh môi trường",max:4,kind:"sum",subs:subs(["Khu vực lưu giữ trang thiết bị VSMT","Đủ cơ số trang thiết bị (xe, chổi lau, xô/chậu, tải lau, khăn)","Đủ hóa chất, còn hạn sử dụng","Biển báo sàn ướt, bảng hướng dẫn vệ sinh bề mặt"])},
+  {code:"1.5",title:"Trang thiết bị quản lý chất thải",max:3,kind:"sum",subs:subs(["Khu vực lưu giữ chất thải tạm thời","Đủ thùng chất thải theo quy định bệnh viện","Bảng phân loại chất thải"])},
+  {code:"1.6",title:"Xe tiêm có đủ thùng/túi phân loại rác",max:4,kind:"sum",hint:"Đủ tiêu chí được 4 điểm, thiếu 1 loại trừ 1 điểm.",subs:subs(["Thùng/túi màu trắng","Thùng/túi màu vàng","Thùng/túi màu xanh","Hộp an toàn kháng thủng"])}]},
+ {id:"II",title:"2. Quy định, quy trình",items:[
+  {code:"2.1",title:"Các quy trình tuân thủ KSNK",max:7,kind:"sum",subs:subs(["QT vệ sinh tay thường quy","QT vệ sinh tay ngoại khoa","QT xử lý, thu gom, vận chuyển, giao nhận, bảo quản dụng cụ y tế","QT xử lý, thu gom, vận chuyển, giao nhận, bảo quản đồ vải","QT vệ sinh môi trường","QT phân loại, quản lý chất thải y tế","Hướng dẫn phòng ngừa chuẩn"])},
+  {code:"2.2",title:"Các quy trình phòng ngừa lây nhiễm",max:3,kind:"sum",subs:[S("QT xử lý người bệnh mắc bệnh truyền nhiễm cấp tính (COVID-19, cúm A-H5N1…)",1.5),S("QT xử lý phơi nhiễm do tai nạn vật sắc nhọn",1.5)]},
+  {code:"2.3",title:"Các quy trình phòng ngừa nhiễm khuẩn bệnh viện",max:2,kind:"sum",subs:subs(["QT/HD sử dụng kháng sinh an toàn, hợp lý, KS dự phòng từng loại phẫu thuật","Hướng dẫn phòng ngừa NKBV (NKVM, NKH, NKP, NKTN…)"])},
+  {code:"2.4",title:"Lưu giữ công văn, tài liệu về hoạt động mạng lưới KSNK",max:3,kind:"manual",hint:"Kiểm tra file lưu giữ công văn về KSNK.",levels:[{s:3,t:"Lưu giữ đầy đủ"},{s:2,t:"Có lưu nhưng không đầy đủ"},{s:0,t:"Không lưu giữ"}]}]},
+ {id:"III",title:"3. Kiến thức của NVYT về KSNK",items:[
+  {code:"3.1",title:"Thời điểm VST thường quy",max:5,kind:"sum",hint:"Hỏi 1 nhân viên. Tick các ý trả lời đúng.",subs:subs(["Trước khi thăm khám NB","Trước khi làm thủ thuật sạch, xâm lấn","Sau khi khám NB","Sau tiếp xúc máu, dịch cơ thể","Sau tiếp xúc môi trường xung quanh NB"])},
+  {code:"3.2",title:"Thời điểm không sử dụng găng",max:7,kind:"sum",hint:"Hỏi 1 nhân viên. Tick các ý trả lời đúng.",subs:subs(["Khám bệnh","Cho ăn","Lấy mạch, nhiệt độ, huyết áp","Thay đồ vải cho NB","Tiêm bắp, tiêm trong da, dưới da","Viết hồ sơ BA, giấy XN…","Đi từ buồng bệnh này sang buồng khác, từ khoa này sang khoa khác"])},
+  {code:"3.3",title:"Kỹ thuật VST thường quy",max:6,kind:"sum",hint:"Yêu cầu 1 nhân viên thực hiện. Tick các bước đúng.",subs:subs(["Chà 2 lòng bàn tay vào nhau","Chà lòng bàn tay này vào mu bàn tay kia và ngược lại","Chà 2 lòng bàn tay, miết các ngón tay vào kẽ ngón","Chà mu các ngón tay này lên lòng bàn tay kia và ngược lại","Chà lòng bàn tay này vào ngón cái bàn tay kia và ngược lại","Chà đầu các ngón tay này vào lòng bàn tay kia và ngược lại"])},
+  {code:"3.4",title:"Các nhóm chất thải cần phân loại riêng (nêu ví dụ)",max:6,kind:"sum",subs:subs(["Chất thải lây nhiễm sắc nhọn","Chất thải lây nhiễm không sắc nhọn","Chất thải nguy hại KLN lỏng","Chất thải nguy hại KLN rắn","Chất thải thông thường","Chất thải tái chế"])},
+  {code:"3.5",title:"Phương tiện, mã màu cô lập chất thải",max:6,kind:"sum",subs:subs(["Hộp/thùng kháng thủng màu vàng: lây nhiễm sắc nhọn","Thùng/túi màu vàng: lây nhiễm không sắc nhọn","Thùng/túi màu đen: nguy hại KLN rắn","Thùng màu đen: nguy hại KLN lỏng","Thùng/túi màu xanh: thông thường","Thùng/túi màu trắng: tái chế"])},
+  {code:"3.6",title:"Phòng ngừa lây nhiễm nghề nghiệp ở NVYT",max:2,kind:"sum",subs:subs(["Danh sách NVYT được tiêm viêm gan B gần nhất","NVYT mắc bệnh truyền nhiễm nhóm A không chăm sóc BN sau PT"])}]},
+ {id:"IV",title:"4. Thực hành KSNK",items:[
+  {code:"4.1",title:"Khử khuẩn tiệt khuẩn",max:4,kind:"sum",subs:subs(["Dụng cụ tiệt khuẩn có chỉ thị màu, ngày hấp, còn hạn, bao bì không rách","Chậu/thùng ngâm khi không dùng bỏ hết nước/hóa chất, làm sạch mỗi ngày, không vết bẩn","Thùng ngâm hóa chất ghi rõ tên hóa chất, ngày pha, hạn dùng (nếu có)","Dụng cụ sau sử dụng không để khô, đóng mảng bám; KKSB hoặc để thùng có nắp trước khi chuyển xuống khoa KSNK"])},
+  {code:"4.2",title:"Quản lý đồ vải",max:5,kind:"sum",subs:subs(["Tất cả người bệnh mặc quần áo của bệnh viện","Kiểm tra đồ vải trước cấp phát, không để NB dùng đồ rách, thiếu cúc…","Đồ vải bẩn không đếm bàn giao ở phòng bệnh","Đồ vải dính máu, dịch được cô lập tại nguồn, cho vào túi không thấm, để nơi quy định","NB được thay đồ vải định kỳ theo quy định"])},
+  {code:"4.3",title:"Phân loại chất thải y tế",max:7,kind:"bins",hint:"Kiểm tra ngẫu nhiên 5 thùng rác, phân loại sai 1 thùng trừ 1 điểm. Điểm = 2 ý đạt (1 điểm/ý) + 5 trừ số thùng sai.",subs:subs(["Thùng rác đặt ngay ngắn, đúng vị trí, có nắp, lót túi đúng màu, rác không tràn","Chất thải trên xe tiêm phân loại đúng ngay tại nguồn"]),counter:{label:"Số thùng phân loại sai (trong 5)",max:5}},
+  {code:"4.4",title:"Vệ sinh môi trường",max:5,kind:"sum",subs:subs(["Hành lang, phòng máy sạch, không vết bẩn nhìn thấy","Bề mặt xe tiêm, xe thủ thuật không dính máu, vết bẩn","Cửa, sàn, trần, quạt không có vết bẩn làm sạch được","Giường bệnh không dính máu hoặc vết bẩn làm sạch được","Thiết bị máy móc không có vết bẩn nhìn thấy"])}]}]},
+a4:{short:"Chương A4 – Bộ tiêu chí",name:"Chương A4: Giảm nguy cơ nhiễm khuẩn liên quan đến chăm sóc y tế",declared:34,
+ sections:[
+ {id:"A4.1",title:"A4.1 Điều kiện cơ bản về KSNK",items:[
+  {code:"1",title:"Trang thiết bị vệ sinh tay đầy đủ tại các khu vực",max:2,kind:"count",hint:"Kiểm tra 5 khu vực: buồng bệnh, hành chính, phòng thủ thuật, hành lang/khu công cộng, nhà vệ sinh. Đủ 4 thành phần: bồn rửa tay, dung dịch SKTN, khăn/giấy lau tay, bảng hướng dẫn.",counter:{label:"Số khu vực đủ 4 thành phần (trong 5)",max:5,t1:3},levels:[{s:0,t:"SKTN hết hạn hoặc không có bồn rửa tay tại ≥2 khu vực; không có phương tiện VST tại ≥3/5 khu vực"},{s:1,t:"Đủ 4 thành phần nhưng chỉ đạt 3–4/5 khu vực"},{s:2,t:"100% khu vực luôn sẵn sàng, đủ tất cả trang thiết bị"}]},
+  {code:"2",title:"Trang thiết bị vệ sinh môi trường đầy đủ",max:2,kind:"present",t1:3,hint:"Kiểm tra các xe vệ sinh và khu lưu trữ.",subs:subs(["Có khu vực lưu giữ trang thiết bị VSMT","Đủ cơ số trang thiết bị (xe, chổi lau, xô/chậu, tải lau, khăn)","Đủ hóa chất, còn hạn sử dụng","Có biển báo sàn ướt, bảng hướng dẫn vệ sinh bề mặt"]),levels:[{s:0,t:"Thiếu ≥2 thành phần"},{s:1,t:"Chỉ thiếu 1 thành phần hoặc bố trí chưa đúng quy định"},{s:2,t:"Đầy đủ, bố trí đúng vị trí quy định"}]},
+  {code:"3",title:"Trang thiết bị quản lý chất thải đầy đủ",max:2,kind:"count",hint:"Kiểm tra 5 vị trí đặt thùng rác bất kỳ (bắt buộc có 1 vị trí tại xe tiêm).",counter:{label:"Số vị trí đạt (trong 5)",max:5,t1:3},levels:[{s:0,t:"Không phân loại rác, không có thùng rác chất thải y tế, xe tiêm không có hộp kháng thủng"},{s:1,t:"Còn sai sót tại 1–2 vị trí (sai màu túi, thiếu bảng hướng dẫn, đặt sai vị trí) hoặc thiếu khu lưu giữ chất thải tạm thời"},{s:2,t:"Tất cả vị trí đủ thùng đúng màu, đúng loại; xe tiêm đủ thùng/túi trắng-vàng-xanh; có bảng hướng dẫn phân loại"}]},
+  {code:"4",title:"Trang thiết bị khử khuẩn/tiệt khuẩn đầy đủ",max:2,kind:"manual",hint:"Quan sát trực tiếp tại đơn vị.",levels:[{s:0,t:"Không có thùng ngâm/vận chuyển đúng tiêu chuẩn, hoặc dụng cụ sau dùng để khô, không ngâm nước/hóa chất KKSB"},{s:1,t:"Thiếu một trong: dụng cụ ngâm ngập đúng quy định; hóa chất KKSB đủ còn hạn; bảng hướng dẫn hóa chất KKSB; khu vực/tủ lưu giữ dụng cụ sạch và vô khuẩn"},{s:2,t:"Có khu vực xử lý/lưu trữ đúng quy định; dụng cụ ngâm ngập đúng; hóa chất đủ còn hạn; đủ bảng hướng dẫn"}]},
+  {code:"5",title:"Trang thiết bị quản lý đồ vải đầy đủ",max:2,kind:"manual",hint:"Quan sát khu vực lưu giữ đồ vải (sạch – bẩn).",levels:[{s:0,t:"Đồ vải bẩn không thu gom riêng, thiếu toàn bộ túi đựng và xe vận chuyển chuyên dụng"},{s:1,t:"Có phân loại sạch – bẩn nhưng thiếu túi đựng và/hoặc xe vận chuyển chuyên dụng, hoặc bố trí chưa đúng"},{s:2,t:"Đủ khu vực lưu giữ, túi đựng, xe chuyên dụng đúng vị trí; thu gom, phân loại đúng quy định"}]},
+  {code:"6",title:"Có đầy đủ các quy trình tuân thủ KSNK tại đơn vị",max:2,kind:"present",t1:4,hint:"Kiểm tra bộ quy trình lưu trữ tại đơn vị.",subs:subs(["QT vệ sinh tay thường quy","QT vệ sinh tay ngoại khoa","QT xử lý, thu gom, vận chuyển, giao nhận, bảo quản dụng cụ y tế","QT xử lý, thu gom, vận chuyển, giao nhận, bảo quản đồ vải","QT vệ sinh môi trường","QT phân loại, quản lý chất thải y tế","Hướng dẫn phòng ngừa chuẩn"]),levels:[{s:0,t:"Thiếu ≥3 quy trình cốt lõi hoặc không có hướng dẫn phòng ngừa chuẩn"},{s:1,t:"Có từ 4–6 quy trình"},{s:2,t:"Đầy đủ tất cả quy trình"}]},
+  {code:"7",title:"Nhân viên nắm vững quy trình KSNK",max:2,kind:"count",hint:"Phỏng vấn 5 NVYT (2 BS, 3 điều dưỡng).",counter:{label:"Số NVYT trả lời đúng (trong 5)",max:5,t1:3},levels:[{s:0,t:"≤2/5 NVYT trả lời đúng"},{s:1,t:"3–4 NVYT trả lời đúng"},{s:2,t:"5/5 NVYT trả lời đúng"}]},
+  {code:"8",title:"Quy trình phòng ngừa lây nhiễm và hướng dẫn phòng ngừa NKBV",max:2,kind:"present",t1:1,subs:subs(["QT xử lý phơi nhiễm do tai nạn vật sắc nhọn","QT xử lý máu, dịch tiết của người bệnh","Hướng dẫn phòng ngừa NKBV (NKVM, NKH, NKP, NKTN…)"]),levels:[{s:0,t:"Không lưu trữ toàn bộ quy trình/hướng dẫn tại đơn vị"},{s:1,t:"Có lưu trữ nhưng chưa đầy đủ"},{s:2,t:"Lưu trữ đầy đủ theo quy định"}]},
+  {code:"9",title:"Lưu trữ công văn, tài liệu về hoạt động mạng lưới KSNK",max:2,kind:"manual",levels:[{s:0,t:"Không lưu trữ công văn"},{s:1,t:"Có lưu trữ nhưng chưa đầy đủ"},{s:2,t:"Lưu trữ đầy đủ hệ thống công văn, tài liệu"}]}]},
+ {id:"A4.2",title:"A4.2 Triển khai quy định, quy trình KSNK",items:[
+  {code:"10",title:"Tuân thủ 5 thời điểm vệ sinh tay thường quy",max:2,kind:"count",hint:"Quan sát và phỏng vấn 5 NVYT (2 BS, 3 điều dưỡng).",counter:{label:"Số NVYT thực hiện đúng (trong 5)",max:5,t1:3},levels:[{s:0,t:"Có NVYT không VST tại thời điểm bắt buộc (trước thủ thuật, sau tiếp xúc máu/dịch)"},{s:1,t:"3–4/5 NVYT thực hiện đúng"},{s:2,t:"5/5 NVYT thực hiện đầy đủ"}]},
+  {code:"11",title:"Thực hành đúng kỹ thuật vệ sinh tay",max:2,kind:"count",hint:"Quan sát 1 NVYT thực hiện 6 bước VST thường quy.",counter:{label:"Số bước thực hiện đúng (trong 6)",max:6,t1:4},levels:[{s:0,t:"Thực hiện đúng ≤3/6 bước"},{s:1,t:"Đúng 4–5 bước"},{s:2,t:"Đúng đủ 6 bước"}]},
+  {code:"12",title:"Sử dụng găng đúng thời điểm",max:2,kind:"count",hint:"Phỏng vấn hoặc quan sát 5 NVYT (2 BS, 3 điều dưỡng).",counter:{label:"Số NVYT dùng găng đúng (trong 5)",max:5,t1:3},levels:[{s:0,t:"Có sử dụng găng sai nguyên tắc gây nguy cơ lây nhiễm (không đeo khi cần hoặc lạm dụng)"},{s:1,t:"3–4 NVYT thực hiện đúng trong đa số tình huống"},{s:2,t:"5/5 NVYT đeo găng đúng thời điểm"}]},
+  {code:"13",title:"Phân loại chất thải y tế",max:2,kind:"count",hint:"Kiểm tra 5 thùng rác (bắt buộc có 1 thùng trên xe tiêm).",counter:{label:"Số thùng đạt (trong 5)",max:5,t1:4},levels:[{s:0,t:"Trộn lẫn chất thải lây nhiễm với thông thường ở bất kỳ vị trí nào, hoặc ≥2 thùng phân loại sai"},{s:1,t:"1 thùng phân loại sai hoặc thiếu 1 yếu tố (màu túi, nắp, vị trí); rác gần đầy chưa gây nguy cơ trực tiếp"},{s:2,t:"Cả 5 thùng đúng quy định, đúng vị trí, có nắp, lót túi đúng màu, rác không quá 2/3 thùng"}]},
+  {code:"14",title:"Phòng ngừa lây nhiễm nghề nghiệp ở NVYT",max:2,kind:"present",t1:1,hint:"Kiểm tra hồ sơ, văn bản tại đơn vị.",subs:subs(["Danh sách tiêm viêm gan B cập nhật đầy đủ toàn bộ NVYT","Theo dõi, rà soát định kỳ bệnh truyền nhiễm của NVYT (danh sách, biên bản)","Phân công phù hợp, không bố trí NVYT mắc bệnh truyền nhiễm ở khu vực nguy cơ cao"]),levels:[{s:0,t:"Không có danh sách theo dõi tiêm VGB; hoặc NVYT mắc bệnh truyền nhiễm vẫn chăm sóc ở khu vực nguy cơ cao"},{s:1,t:"Có triển khai nhưng danh sách chưa cập nhật đầy đủ; chưa có bằng chứng kiểm soát định kỳ"},{s:2,t:"Thực hiện đầy đủ và đồng bộ cả 3 nội dung"}]},
+  {code:"15",title:"Khử khuẩn - tiệt khuẩn dụng cụ đúng quy định",max:2,kind:"manual",hint:"Kiểm tra việc thực hiện KK-TK tại đơn vị.",levels:[{s:0,t:"Vi phạm 1 trong: dụng cụ tiệt khuẩn không đảm bảo (thiếu chỉ thị màu/ngày, hết hạn, rách bao bì); dụng cụ để khô, đóng mảng bám; thùng/chậu ngâm bẩn, còn dung dịch cũ; thùng hóa chất không ghi tên/ngày pha/hạn"},{s:1,t:"Dụng cụ còn hạn, bao bì không rách, xử lý/ngâm/đậy đúng nhưng: thiếu thông tin chỉ thị màu/ngày; chậu ngâm còn vết bẩn nhẹ; ghi nhãn hóa chất chưa đầy đủ"},{s:2,t:"Đủ cả 4: dụng cụ có chỉ thị màu, ngày, còn hạn, bao bì nguyên vẹn; chậu ngâm sạch, làm sạch hàng ngày; thùng hóa chất ghi rõ; dụng cụ sau dùng được xử lý ngay"}]},
+  {code:"16",title:"Quản lý đồ vải đúng quy định",max:2,kind:"manual",hint:"Quan sát trực tiếp quản lý đồ vải tại khoa.",levels:[{s:0,t:"Vi phạm 1 trong: đồ vải bẩn/dính máu không thu gom riêng; vận chuyển không túi chống thấm; NB dùng đồ vải bẩn, rách; đếm/xử lý đồ bẩn tại buồng bệnh"},{s:1,t:"Chỉ 1–2 trường hợp đồ vải chưa đạt (rách, thiếu cúc, chưa kiểm tra kỹ); chưa thay đồ vải đúng tần suất (1 lần/ngày)"},{s:2,t:"Mọi NB mặc đồ vải BV sạch, nguyên vẹn; kiểm tra trước cấp phát; không đếm tại buồng bệnh; đồ dính máu/dịch cô lập, túi chống thấm; thay định kỳ"}]},
+  {code:"17",title:"Đảm bảo vệ sinh môi trường đúng quy định",max:2,kind:"count",hint:"Kiểm tra ngẫu nhiên 5 nhóm: hành lang/phòng máy; xe tiêm/xe thủ thuật; cửa/sàn/trần/quạt; bàn can thiệp/thủ thuật; thiết bị, máy móc.",counter:{label:"Số nhóm sạch (trong 5)",max:5,t1:4},levels:[{s:0,t:"≥2 vị trí có vết bẩn nhìn rõ; xe tiêm/bàn can thiệp dính máu, dịch; thiết bị có vết bẩn gây nguy cơ; hành lang/phòng máy không vệ sinh"},{s:1,t:"Chỉ 1/5 vị trí còn vết bẩn nhẹ làm sạch được"},{s:2,t:"Cả 5 nhóm sạch, không vết bẩn nhìn thấy"}]}]}]}
+};
+for(const f of Object.values(FORMS)){f.items=[];f.sections.forEach((s,si)=>s.items.forEach(it=>{it.sec=si;f.items.push(it)}));f.max=f.items.reduce((a,b)=>a+b.max,0);}
+
+/* ===== TRẠNG THÁI & LƯU TRỮ ===== */
+const KEY="ksnk_v1";
+let mem=[];
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return mem}};
+const save=()=>{mem=ST.recs;try{localStorage.setItem(KEY,JSON.stringify(ST.recs))}catch(e){}};
+const ST={view:"home",recs:[],cur:null,tab:"info",delId:null};
+ST.recs=load();
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const vdate=s=>{const m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s||"");return m?`${m[3]}/${m[2]}/${m[1]}`:"..../..../........"};
+const fmt=n=>(Math.round(n*10)/10).toString().replace(".",",");
+const rec=()=>ST.recs.find(r=>r.id===ST.cur);
+const form=()=>FORMS[rec().form];
+function newRec(f){const r={id:"r"+Date.now().toString(36),form:f,unit:"",date:today(),inspector:"",items:{},nx:"",dn:"",upd:Date.now()};ST.recs.unshift(r);ST.cur=r.id;ST.tab="info";ST.view="check";save();render();window.scrollTo(0,0)}
+const stOf=(r,it)=>{const k=r.form+"|"+it.code;return r.items[k]||(r.items[k]={c:[],n:null,s:null,note:""})};
+
+/* ===== TÍNH ĐIỂM ===== */
+function auto(it,st){
+  const sum=a=>a.reduce((t,w,i)=>t+(st.c[i]?w.w:0),0);
+  if(it.kind==="sum")return Math.round(sum(it.subs)*2)/2;
+  if(it.kind==="bins")return sum(it.subs)+Math.max(0,it.counter.max-(st.n||0));
+  if(it.kind==="present"){const p=it.subs.filter((_,i)=>st.c[i]).length;return p>=it.subs.length?2:p>=it.t1?1:0}
+  if(it.kind==="count"){if(st.n==null)return null;const c=it.counter;return st.n>=c.max?2:st.n>=c.t1?1:0}
+  return null}
+const score=(r,it)=>{const v=stOf(r,it).s;return v==null?0:v};
+function totals(r){const f=FORMS[r.form];let t=0,done=0;const secs=f.sections.map(()=>({s:0,m:0,d:0,n:0}));
+  f.items.forEach(it=>{const st=stOf(r,it),v=st.s==null?0:st.s;t+=v;if(st.s!=null)done++;const o=secs[it.sec];o.s+=v;o.m+=it.max;o.n++;if(st.s!=null)o.d++});
+  return{t,max:f.max,done,n:f.items.length,secs,pct:f.max?t/f.max*100:0}}
+
+/* ===== GIAO DIỆN ===== */
+function badgeCls(v,m,answered){if(!answered)return"badge";return v>=m?"badge full":v<=0?"badge zero":"badge part"}
+function itemCard(it,r){
+  const st=stOf(r,it),ans=st.s!=null,v=ans?st.s:0,id=`it-${it.code.replace(".","_")}`;
+  let h=`<section class="card" id="${id}" data-code="${it.code}"><div class="item-h"><span class="code">${esc(it.code)}</span><h3>${esc(it.title)}</h3><span class="${badgeCls(v,it.max,ans)}">${ans?fmt(v):"–"}/${it.max}</span></div>`;
+  if(it.hint)h+=`<p class="hint">${esc(it.hint)}</p>`;
+  if(it.subs)h+=`<div class="subs">`+it.subs.map((s,i)=>`<label class="sub"><input type="checkbox" data-a="chk" data-i="${i}" ${st.c[i]?"checked":""}><span>${esc(s.t)}${s.w!==1?` <small>(${s.w}đ)</small>`:""}</span></label>`).join("")+`</div>`;
+  if(it.counter){const n=st.n==null?(it.kind==="bins"?0:null):st.n;h+=`<div class="row"><span style="flex:1;min-width:140px;font-size:14px">${esc(it.counter.label)}</span><span class="step"><button data-a="cnt" data-d="-1" aria-label="Giảm">−</button><output>${n==null?"–":n}</output><button data-a="cnt" data-d="1" aria-label="Tăng">+</button></span></div>`}
+  if(it.levels){
+    h+=`<div class="lv" role="group" aria-label="Chọn điểm">`+it.levels.map(l=>`<button data-a="lv" data-s="${l.s}" aria-pressed="${st.s===l.s}">${l.s} đ</button>`).join("")+`</div>`;
+    const cur=it.levels.find(l=>l.s===st.s);
+    if(cur)h+=`<p class="lvtxt">${esc(cur.t)}</p>`;
+    h+=`<details><summary>Xem tiêu chí chấm</summary><ul style="padding-left:18px;margin:4px 0">`+it.levels.map(l=>`<li><b>${l.s} điểm:</b> ${esc(l.t)}</li>`).join("")+`</ul></details>`;
+  }else{
+    h+=`<div class="row"><span style="flex:1;font-size:14px">Điểm đạt <small style="color:var(--mute)">(tự tính theo ô đã tick, có thể chỉnh)</small></span><span class="step"><button data-a="sc" data-d="-0.5" aria-label="Giảm điểm">−</button><output>${ans?fmt(v):"–"}</output><button data-a="sc" data-d="0.5" aria-label="Tăng điểm">+</button></span></div>`;
+  }
+  h+=`<textarea class="note" data-a="note" rows="1" placeholder="Ghi chú / tồn tại phát hiện…">${esc(st.note)}</textarea></section>`;
+  return h}
+
+function homeView(){
+  const fl=Object.entries(FORMS);
+  let h=`<div class="top"><div class="top-row"><h1>Kiểm tra định kỳ KSNK</h1></div><div class="sub">BV Đại học Y Hà Nội · Khoa Kiểm soát nhiễm khuẩn</div></div>`;
+  h+=`<p class="sec-title">Tạo phiếu mới</p>`;
+  fl.forEach(([k,f])=>h+=`<button class="rec" data-a="new" data-f="${k}"><span class="meta"><b>${esc(f.name)}</b><small>${f.items.length} tiêu chí · ${fmt(f.max)} điểm</small></span><span class="pill" style="background:var(--accent);color:var(--accent-ink)">+ Tạo</span></button>`);
+  h+=`<p class="sec-title">Các lần kiểm tra đã lưu (${ST.recs.length})</p>`;
+  if(!ST.recs.length)h+=`<p class="empty">Chưa có phiếu nào. Chọn một biểu mẫu ở trên để bắt đầu.</p>`;
+  ST.recs.forEach(r=>{const t=totals(r),f=FORMS[r.form];
+    h+=`<div class="rec" style="padding:0"><button data-a="open" data-id="${r.id}" style="all:unset;box-sizing:border-box;display:flex;gap:12px;align-items:center;flex:1;min-width:0;padding:12px;cursor:pointer"><span class="meta"><b>${esc(r.unit||"(chưa chọn đơn vị)")}</b><small>${esc(f.short)} · ${vdate(r.date)} · đã chấm ${t.done}/${t.n}</small></span><span style="text-align:right"><b style="font-size:20px;display:block;font-variant-numeric:tabular-nums">${fmt(t.t)}</b><small style="color:var(--mute)">/${fmt(t.max)}</small></span></button><button class="btn sm ${ST.delId===r.id?"dng":""}" data-a="del" data-id="${r.id}" style="margin-right:10px">${ST.delId===r.id?"Xóa?":"Xóa"}</button></div>`});
+  if(ST.recs.length){h+=`<div class="row"><button class="btn sm" data-a="sum">Sao chép bảng tổng hợp (dán vào Excel)</button></div>`}
+  h+=`<p class="hint" style="margin-top:18px">Dữ liệu lưu ngay trên điện thoại này, tự động sau mỗi thao tác. Dùng được khi không có mạng nếu mở từ file đã tải về.</p>`;
+  return h}
+
+function checkView(){
+  const r=rec(),f=form(),t=totals(r);
+  let h=`<div class="top"><div class="top-row"><button class="ghost" data-a="home" aria-label="Về danh sách">‹ Danh sách</button><h1 style="text-align:center">${esc(r.unit||f.short)}</h1><span class="pill">${fmt(t.t)}/${fmt(t.max)}</span></div><div class="chips" role="tablist">`;
+  const chip=(k,l,extra)=>`<button class="chip" data-a="tab" data-t="${k}" aria-current="${ST.tab===k}">${l}${extra?` <small>${extra}</small>`:""}</button>`;
+  h+=chip("info","Thông tin");
+  f.sections.forEach((s,i)=>h+=chip(String(i),esc(s.id),`${t.secs[i].d}/${t.secs[i].n}`));
+  h+=chip("result","Kết quả")+`</div></div>`;
+  if(ST.tab==="info"){
+    h+=`<div class="card"><label class="f" for="unit">Đơn vị được kiểm tra</label><input class="in" id="unit" data-a="fld" data-k="unit" list="units" value="${esc(r.unit)}" placeholder="Chọn hoặc gõ tên đơn vị" autocomplete="off"><datalist id="units">${UNITS.map(u=>`<option value="${esc(u)}">`).join("")}</datalist>
+    <label class="f" for="date">Thời gian kiểm tra</label><input class="in" id="date" type="date" data-a="fld" data-k="date" value="${esc(r.date)}">
+    <label class="f" for="insp">Người / đoàn kiểm tra</label><input class="in" id="insp" data-a="fld" data-k="inspector" value="${esc(r.inspector)}" placeholder="Họ tên người kiểm tra"></div>
+    <p class="hint" style="margin-top:12px">${esc(f.name)}. ${f.items.length} tiêu chí, tổng ${fmt(f.max)} điểm.</p>`;
+    if(f.declared!==f.max)h+=`<p class="warn">Lưu ý: phiếu gốc ghi tổng điểm ${f.declared}, nhưng cộng các mục lại được ${fmt(f.max)}. Ứng dụng tính theo tổng các mục (${fmt(f.max)}).</p>`;
+  }else if(ST.tab==="result"){h+=resultView(r,f,t)}
+  else{const s=f.sections[+ST.tab];h+=`<p class="sec-title">${esc(s.title)} · tối đa ${fmt(t.secs[+ST.tab].m)} điểm</p>`+s.items.map(it=>itemCard(it,r)).join("")}
+  const order=["info",...f.sections.map((_,i)=>String(i)),"result"],ix=order.indexOf(ST.tab);
+  h+=`<div class="bar"><div>${ix>0?`<button class="btn" data-a="go" data-d="-1">‹ Trước</button>`:""}${ix<order.length-1?`<button class="btn pri" data-a="go" data-d="1">${ix===order.length-2?"Xem kết quả ›":"Tiếp ›"}</button>`:`<button class="btn pri" data-a="copy">Sao chép báo cáo</button>`}</div></div>`;
+  return h}
+
+function lossList(r,f){return f.items.filter(it=>{const st=stOf(r,it);return st.s==null||st.s<it.max})}
+/* Chi tiết điểm bị trừ: số điểm mất + lý do (ý chưa đạt, số thùng sai, mức chấm) */
+function lossInfo(r,it){const st=stOf(r,it),lost=it.max-(st.s==null?0:st.s),why=[];
+  if(st.s==null){why.push("Chưa chấm điểm")}
+  else{
+    if(it.subs){const miss=it.subs.filter((_,i)=>!st.c[i]);if(miss.length&&it.kind!=="manual")why.push("Chưa đạt: "+miss.map(m=>m.t).join("; "))}
+    if(it.kind==="bins"&&st.n)why.push(`Phân loại sai ${st.n} thùng rác (trừ ${st.n} điểm)`);
+    if(it.kind==="count"&&st.n!=null)why.push(`${it.counter.label}: ${st.n}`);
+    if(it.levels){const l=it.levels.find(x=>x.s===st.s);if(l)why.push("Mức "+l.s+" điểm: "+l.t)}
+  }
+  return{it,lost,why,st}}
+/* Nhận xét tự động từ kết quả chấm */
+function autoNx(r){const f=FORMS[r.form],t=totals(r),L=lossAll(r,f);
+  let s=`Kết quả kiểm tra: ${fmt(t.t)}/${fmt(t.max)} điểm (${fmt(t.pct)}%). Điểm bị trừ: -${fmt(t.max-t.t)} ở ${L.length} tiêu chí.\n`;
+  s+="Theo phần: "+f.sections.map((sec,i)=>`${sec.id} ${fmt(t.secs[i].s)}/${fmt(t.secs[i].m)}`).join("; ")+".\n";
+  if(!L.length)return s+"Đơn vị đạt điểm tối đa ở mọi tiêu chí.";
+  s+="Tồn tại cần khắc phục:\n";
+  L.forEach(x=>{const it=x.it,st=x.st,parts=x.why.filter(w=>!w.startsWith("Mức ")&&!w.startsWith("Số ")&&!w.includes("(trong"));
+    const lv=x.why.find(w=>w.startsWith("Mức "));
+    s+=`- ${it.code}. ${it.title} (-${fmt(x.lost)}): ${(parts.length?parts:(lv?[lv]:[])).join("; ")}${st.note?(parts.length||lv?". ":"")+"Ghi chú: "+st.note:""}\n`});
+  return s.trim()}
+function lossAll(r,f){return lossList(r,f).map(it=>lossInfo(r,it)).sort((a,b)=>b.lost-a.lost||0)}
+function resultView(r,f,t){
+  const miss=t.n-t.done;
+  let h="";
+  if(miss)h+=`<p class="warn">Còn ${miss} tiêu chí chưa chấm (đang tính 0 điểm).</p>`;
+  h+=`<div class="card"><p style="color:var(--mute);font-size:13px">${esc(f.name)}</p><p style="font-weight:600;margin-top:4px">${esc(r.unit||"(chưa chọn đơn vị)")}</p><p class="hint">Kiểm tra ngày ${vdate(r.date)}${r.inspector?" · "+esc(r.inspector):""}</p>
+  <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px"><span class="big">${fmt(t.t)}</span><span style="color:var(--mute)">/ ${fmt(t.max)} điểm</span><span class="pill" style="margin-left:auto;background:var(--accent);color:var(--accent-ink)">${fmt(t.pct)}%</span></div><div class="meter"><i style="width:${t.pct}%"></i></div>`;
+  f.sections.forEach((s,i)=>{const o=t.secs[i],p=o.m?o.s/o.m*100:0;h+=`<div class="secrow"><div class="l"><span>${esc(s.title)}</span><b style="font-variant-numeric:tabular-nums">${fmt(o.s)}/${fmt(o.m)}</b></div><div class="meter" style="height:7px"><i style="width:${p}%"></i></div></div>`});
+  h+=`</div>`;
+  const L=lossAll(r,f),lostTot=t.max-t.t;
+  h+=`<p class="sec-title">Điểm bị trừ</p><div class="card" style="border-color:${lostTot?"var(--bad)":"var(--ok)"}"><div style="display:flex;align-items:baseline;gap:8px"><span class="big" style="color:${lostTot?"var(--bad)":"var(--ok)"}">−${fmt(lostTot)}</span><span style="color:var(--mute)">điểm bị trừ ở ${L.length} tiêu chí</span></div>`;
+  f.sections.forEach((s,i)=>{const o=t.secs[i],ls=o.m-o.s;h+=`<div class="secrow"><div class="l"><span>${esc(s.title)}</span><b style="color:${ls?"var(--bad)":"var(--ok)"};font-variant-numeric:tabular-nums">${ls?"−"+fmt(ls):"đạt tối đa"}</b></div></div>`});
+  h+=`</div>`;
+  if(!L.length)h+=`<div class="card"><p class="empty">Đạt điểm tối đa ở mọi tiêu chí.</p></div>`;
+  L.forEach(x=>{const it=x.it,st=x.st;h+=`<div class="card" style="border-left:5px solid var(--bad)"><div class="item-h"><span class="code">${esc(it.code)}</span><h3>${esc(it.title)}</h3><span class="badge zero">−${fmt(x.lost)}</span></div><p class="hint">Đạt ${st.s==null?"–":fmt(st.s)}/${it.max} điểm · ${esc(f.sections[it.sec].id)}</p>${x.why.map(w=>`<p style="font-size:14px;margin-top:6px">${esc(w)}</p>`).join("")}${st.note?`<p style="font-size:14px;margin-top:6px;padding:7px 10px;background:var(--warn-soft);color:var(--warn);border-radius:8px">Ghi chú: ${esc(st.note)}</p>`:""}</div>`});
+  h+=`<p class="sec-title">Chi tiết điểm</p><div class="card scroll"><table><thead><tr><th>TT</th><th>Nội dung</th><th class="n">Chuẩn</th><th class="n">Đạt</th></tr></thead><tbody>`;
+  f.sections.forEach((s,i)=>{h+=`<tr><td colspan="2"><b>${esc(s.title)}</b></td><td class="n"><b>${fmt(t.secs[i].m)}</b></td><td class="n"><b>${fmt(t.secs[i].s)}</b></td></tr>`;s.items.forEach(it=>{const st=stOf(r,it);h+=`<tr><td>${esc(it.code)}</td><td>${esc(it.title)}</td><td class="n">${it.max}</td><td class="n">${st.s==null?"–":fmt(st.s)}</td></tr>`})});
+  h+=`<tr><td colspan="2"><b>Tổng điểm</b></td><td class="n"><b>${fmt(t.max)}</b></td><td class="n"><b>${fmt(t.t)}</b></td></tr></tbody></table></div>`;
+  if(!r.nx&&t.done){r.nx=autoNx(r);save()}
+  h+=`<div class="card"><label class="f" for="nx" style="margin-top:0">Nhận xét và kết luận của cán bộ kiểm tra</label><div class="row" style="margin-top:6px"><button class="btn sm" data-a="nx">Cập nhật nhận xét từ kết quả</button></div><textarea class="note" id="nx" data-a="fld" data-k="nx" rows="3">${esc(r.nx)}</textarea><label class="f" for="dn">Đề nghị của đơn vị</label><textarea class="note" id="dn" data-a="fld" data-k="dn" rows="3">${esc(r.dn)}</textarea></div>`;
+  h+=`<div class="row"><button class="btn pri" data-a="word">Xuất file Word</button><button class="btn" data-a="copyword">Sao chép phiếu để dán vào Word</button></div><div class="row"><button class="btn" data-a="copy">Sao chép báo cáo (văn bản)</button><button class="btn" data-a="copytsv">Sao chép dạng bảng</button></div>`;
+  return h}
+
+/* ===== BÁO CÁO VĂN BẢN ===== */
+function reportText(r){const f=FORMS[r.form],t=totals(r);
+  let s=`BỆNH VIỆN ĐẠI HỌC Y HÀ NỘI - KHOA KIỂM SOÁT NHIỄM KHUẨN\nBÁO CÁO KIỂM TRA CÔNG TÁC KSNK\n${f.name}\n`;
+  s+=`Đơn vị được kiểm tra: ${r.unit||"..."}\nThời gian kiểm tra: ${vdate(r.date)}\n`+(r.inspector?`Người kiểm tra: ${r.inspector}\n`:"");
+  s+=`\nTỔNG ĐIỂM: ${fmt(t.t)}/${fmt(t.max)} (${fmt(t.pct)}%)\n`;
+  f.sections.forEach((sec,i)=>s+=`- ${sec.title}: ${fmt(t.secs[i].s)}/${fmt(t.secs[i].m)}\n`);
+  const L=lossAll(r,f);
+  s+=`\nĐIỂM BỊ TRỪ: -${fmt(t.max-t.t)} điểm ở ${L.length} tiêu chí\n`;
+  f.sections.forEach((sec,i)=>{const ls=t.secs[i].m-t.secs[i].s;if(ls)s+=`- ${sec.title}: -${fmt(ls)}\n`});
+  L.forEach(x=>{const it=x.it;s+=`\n* ${it.code}. ${it.title}: -${fmt(x.lost)} (đạt ${x.st.s==null?"chưa chấm":fmt(x.st.s)}/${it.max})\n`;x.why.forEach(w=>s+=`   + ${w}\n`);if(x.st.note)s+=`   + Ghi chú: ${x.st.note}\n`});
+  if(r.nx)s+=`\nNHẬN XÉT VÀ KẾT LUẬN:\n${r.nx}\n`;
+  if(r.dn)s+=`\nĐỀ NGHỊ CỦA ĐƠN VỊ:\n${r.dn}\n`;
+  return s}
+/* Xuất phiếu thành file Word (.doc dạng HTML, Word mở trực tiếp) */
+function docBody(r){const f=FORMS[r.form],t=totals(r),e=esc,nl=s=>e(s).replace(/\n/g,"<br>");
+  const isB=r.form==="bm02a";
+  let h=`<table width="100%" style="border:none;border-collapse:collapse"><tr><td style="border:none;width:50%;text-align:center"><b>BỆNH VIỆN ĐẠI HỌC Y HÀ NỘI</b><br><b>KHOA KIỂM SOÁT NHIỄM KHUẨN</b></td><td style="border:none;text-align:right;vertical-align:top"><i>${isB?"BM.02a.KSNK.05":"Chương A4 - Bộ tiêu chí chất lượng"}</i></td></tr></table>`;
+  h+=`<p style="text-align:center;font-size:14pt;margin:12pt 0 6pt"><b>${isB?"PHIẾU KIỂM TRA CÔNG TÁC KIỂM SOÁT NHIỄM KHUẨN KHỐI NGOẠI":"PHIẾU ĐÁNH GIÁ CHƯƠNG A4: GIẢM NGUY CƠ NHIỄM KHUẨN LIÊN QUAN ĐẾN CHĂM SÓC Y TẾ"}</b></p>`;
+  h+=`<p>- Đơn vị được kiểm tra: <b>${e(r.unit||"..........................................")}</b><br>- Thời gian kiểm tra: <b>${vdate(r.date)}</b>${r.inspector?`<br>- Người kiểm tra: ${e(r.inspector)}`:""}</p>`;
+  h+=`<table border="1" cellspacing="0" cellpadding="4" width="100%" style="border-collapse:collapse;border:1px solid #000"><tr style="background:#e8e8e8"><th width="6%">TT</th><th>Nội dung kiểm tra</th><th width="9%">Điểm chuẩn</th><th width="9%">Điểm đạt</th><th width="22%">Ghi chú</th></tr>`;
+  f.sections.forEach((sec,i)=>{h+=`<tr style="background:#f3f3f3"><td></td><td><b>${e(sec.title.toUpperCase())}</b></td><td align="center"><b>${fmt(t.secs[i].m)}</b></td><td align="center"><b>${fmt(t.secs[i].s)}</b></td><td></td></tr>`;
+    sec.items.forEach(it=>{const st=stOf(r,it);let c=`<b>${e(it.title)}</b>`;
+      if(it.subs)c+=it.subs.map((s,k)=>`<br>${st.c[k]?"☑":"☐"} ${e(s.t)}`).join("");
+      if(it.kind==="bins"&&st.n!=null)c+=`<br>Số thùng phân loại sai: ${st.n}/5`;
+      if(it.kind==="count"&&st.n!=null)c+=`<br>${e(it.counter.label)}: ${st.n}`;
+      if(it.levels){const l=it.levels.find(x=>x.s===st.s);if(l)c+=`<br><i>Mức ${l.s} điểm: ${e(l.t)}</i>`}
+      h+=`<tr><td align="center" valign="top">${e(it.code)}</td><td valign="top">${c}</td><td align="center" valign="top">${it.max}</td><td align="center" valign="top">${st.s==null?"":fmt(st.s)}</td><td valign="top">${e(st.note)}</td></tr>`})});
+  h+=`<tr style="background:#e8e8e8"><td></td><td><b>Tổng điểm</b> (${fmt(t.pct)}%)</td><td align="center"><b>${fmt(t.max)}</b></td><td align="center"><b>${fmt(t.t)}</b></td><td>Điểm bị trừ: ${fmt(t.max-t.t)}</td></tr></table>`;
+  h+=`<p><b>Nhận xét và kết luận của cán bộ kiểm tra:</b><br>${r.nx?nl(r.nx):"........................................................................"}</p><p><b>Đề nghị của đơn vị:</b><br>${r.dn?nl(r.dn):"........................................................................"}</p>`;
+  h+=`<table width="100%" style="border:none;margin-top:12pt"><tr><td style="border:none;text-align:center"><b>Xác nhận của đơn vị</b></td><td style="border:none;text-align:center"><b>TM. Đoàn kiểm tra</b>${r.inspector?`<br><br><br><br>${e(r.inspector)}`:""}</td></tr></table>`;
+  return h}
+/* --- File .docx thật (tự đóng gói zip, không cần thư viện) --- */
+const CRC=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0};
+function makeZip(files){const enc=new TextEncoder(),parts=[],cd=[];let off=0;
+  files.forEach(f=>{const nm=enc.encode(f.name),d=enc.encode(f.data),crc=crc32(d);
+    const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);lh.setUint16(10,0,true);lh.setUint16(12,0x21,true);lh.setUint32(14,crc,true);lh.setUint32(18,d.length,true);lh.setUint32(22,d.length,true);lh.setUint16(26,nm.length,true);lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),nm,d);
+    const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);ch.setUint16(12,0,true);ch.setUint16(14,0x21,true);ch.setUint32(16,crc,true);ch.setUint32(20,d.length,true);ch.setUint32(24,d.length,true);ch.setUint16(28,nm.length,true);ch.setUint32(42,off,true);
+    cd.push(new Uint8Array(ch.buffer),nm);off+=30+nm.length+d.length});
+  const cdLen=cd.reduce((a,b)=>a+b.length,0),end=new DataView(new ArrayBuffer(22));end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,cdLen,true);end.setUint32(16,off,true);
+  return new Blob([...parts,...cd,new Uint8Array(end.buffer)],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"})}
+function docxXml(r){const f=FORMS[r.form],t=totals(r),isB=r.form==="bm02a";
+  const X=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const run=(s,o={})=>`<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>${o.b?"<w:b/>":""}${o.i?"<w:i/>":""}<w:sz w:val="${o.sz||22}"/></w:rPr><w:t xml:space="preserve">${X(s)}</w:t></w:r>`;
+  const para=(s,o={})=>String(s).split("\n").map(line=>`<w:p><w:pPr><w:spacing w:before="0" w:after="${o.after??60}"/>${o.jc?`<w:jc w:val="${o.jc}"/>`:""}</w:pPr>${run(line,o)}</w:p>`).join("");
+  const cell=(w,body,o={})=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${o.span?`<w:gridSpan w:val="${o.span}"/>`:""}${o.fill?`<w:shd w:val="clear" w:color="auto" w:fill="${o.fill}"/>`:""}</w:tcPr>${body||para("")}</w:tc>`;
+  const W=[600,5400,900,900,2100],bd=["top","left","bottom","right","insideH","insideV"].map(k=>`<w:${k} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`).join("");
+  const row=cs=>`<w:tr>${cs}</w:tr>`;
+  let b="";
+  b+=para("BỆNH VIỆN ĐẠI HỌC Y HÀ NỘI\nKHOA KIỂM SOÁT NHIỄM KHUẨN",{b:1,jc:"center"});
+  b+=para(isB?"Mã biểu mẫu: BM.02a.KSNK.05":"Chương A4 - Bộ tiêu chí chất lượng",{i:1,jc:"right"});
+  b+=para(isB?"PHIẾU KIỂM TRA CÔNG TÁC KIỂM SOÁT NHIỄM KHUẨN KHỐI NGOẠI":"PHIẾU ĐÁNH GIÁ CHƯƠNG A4: GIẢM NGUY CƠ NHIỄM KHUẨN LIÊN QUAN ĐẾN CHĂM SÓC Y TẾ",{b:1,jc:"center",sz:28,after:120});
+  b+=para("- Đơn vị được kiểm tra: "+(r.unit||".........................................."));
+  b+=para("- Thời gian kiểm tra: "+vdate(r.date));
+  if(r.inspector)b+=para("- Người kiểm tra: "+r.inspector);
+  let tb=row(["TT","Nội dung kiểm tra","Điểm chuẩn","Điểm đạt","Ghi chú"].map((h,i)=>cell(W[i],para(h,{b:1,jc:"center"}),{fill:"E8E8E8"})).join(""));
+  f.sections.forEach((sec,i)=>{tb+=row(cell(W[0],para(""),{fill:"F3F3F3"})+cell(W[1],para(sec.title.toUpperCase(),{b:1}),{fill:"F3F3F3"})+cell(W[2],para(fmt(t.secs[i].m),{b:1,jc:"center"}),{fill:"F3F3F3"})+cell(W[3],para(fmt(t.secs[i].s),{b:1,jc:"center"}),{fill:"F3F3F3"})+cell(W[4],para(""),{fill:"F3F3F3"}));
+    sec.items.forEach(it=>{const st=stOf(r,it);let c=para(it.title,{b:1});
+      if(it.subs)it.subs.forEach((s,k)=>c+=para((st.c[k]?"☑ ":"☐ ")+s.t));
+      if(it.kind==="bins"&&st.n!=null)c+=para(`Số thùng phân loại sai: ${st.n}/5`);
+      if(it.kind==="count"&&st.n!=null)c+=para(`${it.counter.label}: ${st.n}`);
+      if(it.levels){const l=it.levels.find(x=>x.s===st.s);if(l)c+=para(`Mức ${l.s} điểm: ${l.t}`,{i:1})}
+      tb+=row(cell(W[0],para(it.code,{jc:"center"}))+cell(W[1],c)+cell(W[2],para(String(it.max),{jc:"center"}))+cell(W[3],para(st.s==null?"":fmt(st.s),{jc:"center"}))+cell(W[4],para(st.note||"")))})});
+  tb+=row(cell(W[0],para(""),{fill:"E8E8E8"})+cell(W[1],para(`Tổng điểm (${fmt(t.pct)}%)`,{b:1}),{fill:"E8E8E8"})+cell(W[2],para(fmt(t.max),{b:1,jc:"center"}),{fill:"E8E8E8"})+cell(W[3],para(fmt(t.t),{b:1,jc:"center"}),{fill:"E8E8E8"})+cell(W[4],para("Điểm bị trừ: "+fmt(t.max-t.t)),{fill:"E8E8E8"}));
+  b+=`<w:tbl><w:tblPr><w:tblW w:w="9900" w:type="dxa"/><w:tblBorders>${bd}</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${W.map(w=>`<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>${tb}</w:tbl>`;
+  b+=para("");
+  b+=para("Nhận xét và kết luận của cán bộ kiểm tra:",{b:1})+para(r.nx||"........................................................................");
+  b+=para("Đề nghị của đơn vị:",{b:1})+para(r.dn||"........................................................................");
+  b+=para("");
+  const S=[4950,4950];
+  b+=`<w:tbl><w:tblPr><w:tblW w:w="9900" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="4950"/><w:gridCol w:w="4950"/></w:tblGrid>${row(cell(S[0],para("Xác nhận của đơn vị",{b:1,jc:"center"}))+cell(S[1],para("TM. Đoàn kiểm tra",{b:1,jc:"center"})+para("\n\n\n"+(r.inspector||""),{jc:"center"})))}</w:tbl>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${b}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="850" w:right="850" w:bottom="850" w:left="1130" w:header="425" w:footer="425" w:gutter="0"/></w:sectPr></w:body></w:document>`}
+async function exportWord(r){
+  const slug=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  const name=`Phieu-KSNK_${slug(r.unit)||"don-vi"}_${r.date||""}.docx`;
+  let blob;try{blob=makeZip([
+    {name:"[Content_Types].xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'},
+    {name:"_rels/.rels",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'},
+    {name:"word/document.xml",data:docxXml(r)}])}catch(e){return toast("Không tạo được file Word")}
+  try{const c=window.claude&&window.claude.use?await window.claude.use("downloads"):null;
+    if(c){await c.save({filename:name,data:blob});toast("Đã lưu "+name);return}}
+  catch(e){if(e&&e.code==="declined")return;}
+  try{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast("Đã tạo "+name+". Không thấy file thì dùng nút Sao chép dán vào Word")}
+  catch(e){toast("Không tải được, hãy dùng nút Sao chép dán vào Word")}}
+function exportWordOld(r){
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Phiếu kiểm tra KSNK</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>@page{size:21cm 29.7cm;margin:1.5cm 1.5cm 1.5cm 2cm}body{font-family:"Times New Roman",serif;font-size:12pt}table{border-collapse:collapse}td,th{font-size:11pt}</style></head><body>${docBody(r)}</body></html>`;
+  const slug=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  const name=`Phieu-KSNK_${slug(r.unit)||"don-vi"}_${r.date||""}.doc`;
+  try{const url=URL.createObjectURL(new Blob(["﻿"+html],{type:"application/msword"}));const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast("Đã tạo "+name+". Không thấy file tải về thì dùng nút Sao chép dán vào Word")}
+  catch(e){toast("Không tải được, hãy dùng nút Sao chép dán vào Word")}}
+function copyWordHtml(r){const html=docBody(r),txt=reportText(r);
+  const fb=()=>copy(txt,"Đã sao chép dạng văn bản");
+  try{navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([txt],{type:"text/plain"})})]).then(()=>toast("Đã sao chép phiếu, mở Word và dán (Ctrl+V)"),fb)}catch(e){fb()}}
+function reportTSV(r){const f=FORMS[r.form];let s="TT\tNội dung\tĐiểm chuẩn\tĐiểm đạt\tGhi chú\n";
+  f.sections.forEach(sec=>sec.items.forEach(it=>{const st=stOf(r,it);s+=`${it.code}\t${it.title}\t${it.max}\t${st.s==null?"":st.s}\t${(st.note||"").replace(/\s+/g," ")}\n`}));
+  const t=totals(r);return s+`\tTổng điểm\t${t.max}\t${t.t}\t`}
+function summaryTSV(){let s="Đơn vị\tBiểu mẫu\tNgày\tNgười kiểm tra\tĐiểm đạt\tĐiểm chuẩn\t%\tĐã chấm\n";
+  ST.recs.slice().reverse().forEach(r=>{const t=totals(r);s+=[r.unit,FORMS[r.form].short,vdate(r.date),r.inspector,t.t,t.max,Math.round(t.pct*10)/10,t.done+"/"+t.n].join("\t")+"\n"});return s}
+
+/* ===== TIỆN ÍCH ===== */
+let tt;function toast(m){const e=$("#toast");e.textContent=m;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,2200)}
+function copy(text,msg){
+  const fb=()=>{const a=document.createElement("textarea");a.value=text;a.style.cssText="position:fixed;opacity:0";document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}a.remove();toast(ok?msg:"Không sao chép được, hãy chụp màn hình")};
+  try{navigator.clipboard.writeText(text).then(()=>toast(msg),fb)}catch(e){fb()}}
+function refreshItem(code){const r=rec(),it=form().items.find(i=>i.code===code),el=document.getElementById("it-"+code.replace(".","_"));if(el){el.outerHTML=itemCard(it,r)}refreshTop()}
+function refreshTop(){const r=rec(),t=totals(r);const p=document.querySelector(".top .pill");if(p)p.textContent=fmt(t.t)+"/"+fmt(t.max);
+  document.querySelectorAll(".chip").forEach(c=>{const k=c.dataset.t;if(/^\d+$/.test(k)){const o=t.secs[+k];c.querySelector("small").textContent=`${o.d}/${o.n}`}})}
+function render(){$("#app").innerHTML=ST.view==="home"?homeView():checkView()}
+
+/* ===== SỰ KIỆN ===== */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;
+  if(a==="new")return newRec(b.dataset.f);
+  if(a==="open"){ST.cur=b.dataset.id;ST.tab="info";ST.view="check";ST.delId=null;render();window.scrollTo(0,0);return}
+  if(a==="del"){if(ST.delId===b.dataset.id){ST.recs=ST.recs.filter(r=>r.id!==b.dataset.id);ST.delId=null;save()}else ST.delId=b.dataset.id;render();return}
+  if(a==="sum")return copy(summaryTSV(),"Đã sao chép bảng tổng hợp");
+  if(a==="home"){ST.view="home";ST.delId=null;render();window.scrollTo(0,0);return}
+  if(a==="tab"){ST.tab=b.dataset.t;render();window.scrollTo(0,0);return}
+  if(a==="go"){const f=form(),o=["info",...f.sections.map((_,i)=>String(i)),"result"];ST.tab=o[o.indexOf(ST.tab)+ +b.dataset.d];render();window.scrollTo(0,0);return}
+  if(a==="nx"){const r=rec(),g=autoNx(r);r.nx=(!r.nx||r.nx.startsWith("Kết quả kiểm tra"))?g:r.nx+"\n\n"+g;save();render();toast("Đã đưa kết quả vào phần nhận xét");return}
+  if(a==="word")return exportWord(rec());
+  if(a==="copyword")return copyWordHtml(rec());
+  if(a==="copy")return copy(reportText(rec()),"Đã sao chép báo cáo");
+  if(a==="copytsv")return copy(reportTSV(rec()),"Đã sao chép bảng điểm");
+  const card=b.closest("[data-code]");if(!card)return;
+  const r=rec(),it=form().items.find(i=>i.code===card.dataset.code),st=stOf(r,it);
+  if(a==="cnt"){const c=it.counter,cur=st.n==null?(it.kind==="bins"?0:Math.min(c.max,0)):st.n;st.n=Math.max(0,Math.min(c.max,cur+ +b.dataset.d));const v=auto(it,st);if(v!=null)st.s=v}
+  else if(a==="lv"){st.s=+b.dataset.s}
+  else if(a==="sc"){const cur=st.s==null?0:st.s;st.s=Math.max(0,Math.min(it.max,cur+ +b.dataset.d))}
+  else return;
+  r.upd=Date.now();save();refreshItem(it.code)});
+document.addEventListener("change",e=>{
+  const x=e.target,a=x.dataset&&x.dataset.a;if(!a)return;
+  if(a==="chk"){const card=x.closest("[data-code]"),r=rec(),it=form().items.find(i=>i.code===card.dataset.code),st=stOf(r,it);
+    st.c[+x.dataset.i]=x.checked;
+    for(let i=0;i<it.subs.length;i++)st.c[i]=!!st.c[i];
+    const v=auto(it,st);if(v!=null)st.s=v;r.upd=Date.now();save();refreshItem(it.code)}
+});
+document.addEventListener("input",e=>{
+  const x=e.target,a=x.dataset&&x.dataset.a;if(!a)return;
+  if(a==="fld"){const r=rec();r[x.dataset.k]=x.value;r.upd=Date.now();save();if(x.dataset.k==="unit"){const h=document.querySelector(".top h1");if(h)h.textContent=x.value||form().short}}
+  if(a==="note"){const r=rec(),it=form().items.find(i=>i.code===x.closest("[data-code]").dataset.code);stOf(r,it).note=x.value;save()}
+});
+render();
+</script>
+</body></html>
