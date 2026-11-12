@@ -82,6 +82,8 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .scroll{overflow-x:auto}
 .loss{padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:14px;z-index:40}
+.pad{display:block;width:100%;height:auto;aspect-ratio:5/2;border:2px dashed var(--mute);border-radius:10px;background:#fff;touch-action:none;margin-top:6px}
+.okbox{background:var(--ok-soft);color:var(--ok);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:12px}
 .empty{color:var(--mute);text-align:center;padding:24px 8px}
 .warn{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:12px}
 @media (prefers-reduced-motion:no-preference){.meter i{transition:width .25s}}
@@ -206,8 +208,18 @@ const KEY="ksnk_v1";
 let mem=[];
 const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return mem}};
 const save=()=>{mem=ST.recs;try{localStorage.setItem(KEY,JSON.stringify(ST.recs))}catch(e){}};
-const ST={view:"home",recs:[],cur:null,tab:"info",delId:null};
-ST.recs=load();
+const KEYH="ksnk_hist_v1";let memH=[];
+const loadH=()=>{try{return JSON.parse(localStorage.getItem(KEYH))||[]}catch(e){return memH}};
+const saveH=()=>{memH=ST.hist;try{localStorage.setItem(KEYH,JSON.stringify(ST.hist))}catch(e){toast("Bộ nhớ đầy, không lưu được lịch sử")}};
+const ST={view:"home",recs:[],hist:[],cur:null,tab:"info",delId:null,delH:null,h:null,hts:0};
+ST.recs=load();ST.hist=loadH();
+const cr=()=>ST.view==="hist"?ST.h:rec();
+const vts=ts=>{const d=new Date(ts),p=n=>String(n).padStart(2,"0");return `${p(d.getHours())}:${p(d.getMinutes())} ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`};
+const signMissing=r=>{const m=[];if(!r.unit)m.push("tên đơn vị được kiểm tra");if(!r.inspector)m.push("họ tên người kiểm tra");if(!r.sigInsp)m.push("chữ ký người kiểm tra");if(!r.unitSigner)m.push("họ tên đại diện đơn vị");if(!r.sigUnit)m.push("chữ ký đại diện đơn vị");return m};
+function addHist(r){const snap=JSON.parse(JSON.stringify({form:r.form,unit:r.unit,date:r.date,inspector:r.inspector,unitSigner:r.unitSigner,items:r.items,nx:r.nx,dn:r.dn,sigInsp:r.sigInsp,sigUnit:r.sigUnit}));
+  const js=JSON.stringify(snap),old=ST.hist.find(x=>x.rid===r.id&&JSON.stringify(x.snap)===js);
+  if(old){old.ts=Date.now();ST.hist.sort((a,b)=>b.ts-a.ts)}else ST.hist.unshift({id:"h"+Date.now().toString(36),rid:r.id,ts:Date.now(),snap});
+  saveH()}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
@@ -262,6 +274,10 @@ function homeView(){
   ST.recs.forEach(r=>{const t=totals(r),f=FORMS[r.form];
     h+=`<div class="rec" style="padding:0"><button data-a="open" data-id="${r.id}" style="all:unset;box-sizing:border-box;display:flex;gap:12px;align-items:center;flex:1;min-width:0;padding:12px;cursor:pointer"><span class="meta"><b>${esc(r.unit||"(chưa chọn đơn vị)")}</b><small>${esc(f.short)} · ${vdate(r.date)} · đã chấm ${t.done}/${t.n}</small></span><span style="text-align:right"><b style="font-size:20px;display:block;font-variant-numeric:tabular-nums">${fmt(t.t)}</b><small style="color:var(--mute)">/${fmt(t.max)}</small></span></button><button class="btn sm ${ST.delId===r.id?"dng":""}" data-a="del" data-id="${r.id}" style="margin-right:10px">${ST.delId===r.id?"Xóa?":"Xóa"}</button></div>`});
   if(ST.recs.length){h+=`<div class="row"><button class="btn sm" data-a="sum">Sao chép bảng tổng hợp (dán vào Excel)</button></div>`}
+  h+=`<p class="sec-title">Lịch sử phiếu đã ký và xuất Word (${ST.hist.length})</p>`;
+  if(!ST.hist.length)h+=`<p class="empty">Phiếu có đủ chữ ký và đã xuất Word sẽ được lưu tại đây để xem lại.</p>`;
+  ST.hist.forEach(x=>{const s=x.snap,t=totals(s),f=FORMS[s.form];
+    h+=`<div class="rec" style="padding:0"><button data-a="hopen" data-id="${x.id}" style="all:unset;box-sizing:border-box;display:flex;gap:12px;align-items:center;flex:1;min-width:0;padding:12px;cursor:pointer"><span class="meta"><b>${esc(s.unit)}</b><small>${esc(f.short)} · kiểm tra ${vdate(s.date)} · xuất Word ${vts(x.ts)}</small></span><span style="text-align:right"><b style="font-size:20px;display:block;font-variant-numeric:tabular-nums">${fmt(t.t)}</b><small style="color:var(--mute)">/${fmt(t.max)}</small></span></button><button class="btn sm ${ST.delH===x.id?"dng":""}" data-a="hdel" data-id="${x.id}" style="margin-right:10px">${ST.delH===x.id?"Xóa?":"Xóa"}</button></div>`});
   h+=`<p class="hint" style="margin-top:18px">Dữ liệu lưu ngay trên điện thoại này, tự động sau mỗi thao tác. Dùng được khi không có mạng nếu mở từ file đã tải về.</p>`;
   return h}
 
@@ -306,7 +322,22 @@ function autoNx(r){const f=FORMS[r.form],t=totals(r),L=lossAll(r,f);
     s+=`- ${it.code}. ${it.title} (-${fmt(x.lost)}): ${(parts.length?parts:(lv?[lv]:[])).join("; ")}${st.note?(parts.length||lv?". ":"")+"Ghi chú: "+st.note:""}\n`});
   return s.trim()}
 function lossAll(r,f){return lossList(r,f).map(it=>lossInfo(r,it)).sort((a,b)=>b.lost-a.lost||0)}
-function resultView(r,f,t){
+function signBox(r,key,title,nameKey,nameLabel){return `<div class="card"><h3 style="font-size:15px">${title}</h3><label class="f" for="nm-${key}">${nameLabel}</label><input class="in" id="nm-${key}" data-a="fld" data-k="${nameKey}" value="${esc(r[nameKey])}" placeholder="Họ và tên" autocomplete="off"><label class="f">Chữ ký: dùng ngón tay hoặc chuột ký vào ô trắng</label><canvas class="pad" id="pad-${key}" data-key="${key}" width="600" height="240"></canvas><div class="row"><button class="btn sm" data-a="sigclear" data-key="${key}">Xóa chữ ký, ký lại</button><span class="hint sigst" style="margin:0">${r[key]?"Đã có chữ ký":"Chưa ký"}</span></div></div>`}
+function initPads(){document.querySelectorAll("canvas.pad").forEach(cv=>{const key=cv.dataset.key,r=rec(),ctx=cv.getContext("2d");
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);
+  if(r&&r[key]){const im=new Image();im.onload=()=>ctx.drawImage(im,0,0,cv.width,cv.height);im.src=r[key]}
+  ctx.lineWidth=4;ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#111";
+  let on=false;
+  const pt=e=>{const b=cv.getBoundingClientRect();return[(e.clientX-b.left)*cv.width/b.width,(e.clientY-b.top)*cv.height/b.height]};
+  cv.addEventListener("pointerdown",e=>{on=true;try{cv.setPointerCapture(e.pointerId)}catch(x){}const[x,y]=pt(e);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+.1,y+.1);ctx.stroke();e.preventDefault()});
+  cv.addEventListener("pointermove",e=>{if(!on)return;const[x,y]=pt(e);ctx.lineTo(x,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);e.preventDefault()});
+  const end=()=>{if(!on)return;on=false;r[key]=cv.toDataURL("image/png");r.upd=Date.now();save();const s=cv.parentElement.querySelector(".sigst");if(s)s.textContent="Đã có chữ ký";updSignState()};
+  cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end)})}
+function updSignState(){const el=$("#signstat");if(!el||ST.view!=="check")return;const m=signMissing(rec());el.className=m.length?"warn":"okbox";
+  el.textContent=m.length?"Còn thiếu: "+m.join(", ")+". Vẫn xuất được bản nháp, nhưng chỉ phiếu đủ chữ ký mới được lưu vào lịch sử.":"Đủ chữ ký và họ tên. Khi bấm Xuất file Word, phiếu sẽ được lưu vào lịch sử để xem lại."}
+function histView(){const s=ST.h,f=FORMS[s.form],t=totals(s);
+  return `<div class="top"><div class="top-row"><button class="ghost" data-a="home">‹ Danh sách</button><h1 style="text-align:center">${esc(s.unit)}</h1><span class="pill">${fmt(t.t)}/${fmt(t.max)}</span></div><div class="sub">Phiếu đã ký · xuất Word lúc ${vts(ST.hts)} · chỉ xem</div></div>`+resultView(s,f,t,true)}
+function resultView(r,f,t,ro){
   const miss=t.n-t.done;
   let h="";
   if(miss)h+=`<p class="warn">Còn ${miss} tiêu chí chưa chấm (đang tính 0 điểm).</p>`;
@@ -323,8 +354,15 @@ function resultView(r,f,t){
   h+=`<p class="sec-title">Chi tiết điểm</p><div class="card scroll"><table><thead><tr><th>TT</th><th>Nội dung</th><th class="n">Chuẩn</th><th class="n">Đạt</th></tr></thead><tbody>`;
   f.sections.forEach((s,i)=>{h+=`<tr><td colspan="2"><b>${esc(s.title)}</b></td><td class="n"><b>${fmt(t.secs[i].m)}</b></td><td class="n"><b>${fmt(t.secs[i].s)}</b></td></tr>`;s.items.forEach(it=>{const st=stOf(r,it);if(st.na)return;h+=`<tr><td>${esc(it.code)}</td><td>${esc(it.title)}</td><td class="n">${it.max}</td><td class="n">${st.s==null?"–":fmt(st.s)}</td></tr>`})});
   h+=`<tr><td colspan="2"><b>Tổng điểm</b></td><td class="n"><b>${fmt(t.max)}</b></td><td class="n"><b>${fmt(t.t)}</b></td></tr></tbody></table></div>`;
+  if(ro){
+    h+=`<div class="card"><p class="f" style="margin:0">Nhận xét và kết luận của cán bộ kiểm tra</p><p style="white-space:pre-wrap;margin-top:4px">${esc(r.nx||"–")}</p><p class="f">Đề nghị của đơn vị</p><p style="white-space:pre-wrap;margin-top:4px">${esc(r.dn||"–")}</p></div>`;
+    const sg=(title,img,name)=>`<div style="text-align:center;min-width:0"><b>${title}</b>${img?`<img alt="Chữ ký" src="${img}" style="display:block;margin:8px auto;background:#fff;border:1px solid var(--line);border-radius:8px">`:`<div style="height:60px"></div>`}<div style="font-weight:600;overflow-wrap:anywhere">${esc(name||"")}</div></div>`;
+    h+=`<p class="sec-title">Chữ ký</p><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${sg("Xác nhận của đơn vị",r.sigUnit,r.unitSigner)}${sg("TM. Đoàn kiểm tra",r.sigInsp,r.inspector)}</div>`;
+  }else{
   if(!r.nx&&t.done){r.nx=autoNx(r);save()}
   h+=`<div class="card"><label class="f" for="nx" style="margin-top:0">Nhận xét và kết luận của cán bộ kiểm tra</label><div class="row" style="margin-top:6px"><button class="btn sm" data-a="nx">Cập nhật nhận xét từ kết quả</button></div><textarea class="note" id="nx" data-a="fld" data-k="nx" rows="3">${esc(r.nx)}</textarea><label class="f" for="dn">Đề nghị của đơn vị</label><textarea class="note" id="dn" data-a="fld" data-k="dn" rows="3">${esc(r.dn)}</textarea></div>`;
+  h+=`<p class="sec-title">Ký xác nhận</p>`+signBox(r,"sigInsp","TM. Đoàn kiểm tra (người kiểm tra)","inspector","Họ tên người kiểm tra")+signBox(r,"sigUnit","Xác nhận của đơn vị được kiểm tra","unitSigner","Họ tên đại diện đơn vị")+`<div id="signstat"></div>`;
+  }
   h+=`<div class="row"><button class="btn pri" data-a="word">Xuất file Word</button><button class="btn" data-a="copyword">Sao chép phiếu để dán vào Word</button></div><div class="row"><button class="btn" data-a="copy">Sao chép báo cáo (văn bản)</button><button class="btn" data-a="copytsv">Sao chép dạng bảng</button></div>`;
   return h}
 
@@ -357,13 +395,14 @@ function docBody(r){const f=FORMS[r.form],t=totals(r),e=esc,nl=s=>e(s).replace(/
       h+=`<tr><td align="center" valign="top">${e(it.code)}</td><td valign="top">${c}</td><td align="center" valign="top">${it.max}</td><td align="center" valign="top">${st.s==null?"":fmt(st.s)}</td><td valign="top">${e(st.note)}</td></tr>`})});
   h+=`<tr style="background:#e8e8e8"><td></td><td><b>Tổng điểm</b> (${fmt(t.pct)}%)</td><td align="center"><b>${fmt(t.max)}</b></td><td align="center"><b>${fmt(t.t)}</b></td><td>Điểm bị trừ: ${fmt(t.max-t.t)}</td></tr></table>`;
   h+=`<p><b>Nhận xét và kết luận của cán bộ kiểm tra:</b><br>${r.nx?nl(r.nx):"........................................................................"}</p><p><b>Đề nghị của đơn vị:</b><br>${r.dn?nl(r.dn):"........................................................................"}</p>`;
-  h+=`<table width="100%" style="border:none;margin-top:12pt"><tr><td style="border:none;text-align:center"><b>Xác nhận của đơn vị</b></td><td style="border:none;text-align:center"><b>TM. Đoàn kiểm tra</b>${r.inspector?`<br><br><br><br>${e(r.inspector)}`:""}</td></tr></table>`;
+  const si=(u,n)=>(u?`<br><img src="${u}" width="150" height="60"><br>`:"<br><br><br><br>")+e(n||"");
+  h+=`<table width="100%" style="border:none;margin-top:12pt"><tr><td style="border:none;text-align:center"><b>Xác nhận của đơn vị</b><br><i>(Ký, ghi rõ họ tên)</i>${si(r.sigUnit,r.unitSigner)}</td><td style="border:none;text-align:center"><b>TM. Đoàn kiểm tra</b><br><i>(Ký, ghi rõ họ tên)</i>${si(r.sigInsp,r.inspector)}</td></tr></table>`;
   return h}
 /* --- File .docx thật (tự đóng gói zip, không cần thư viện) --- */
 const CRC=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
 const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0};
 function makeZip(files){const enc=new TextEncoder(),parts=[],cd=[];let off=0;
-  files.forEach(f=>{const nm=enc.encode(f.name),d=enc.encode(f.data),crc=crc32(d);
+  files.forEach(f=>{const nm=enc.encode(f.name),d=typeof f.data==="string"?enc.encode(f.data):f.data,crc=crc32(d);
     const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);lh.setUint16(10,0,true);lh.setUint16(12,0x21,true);lh.setUint32(14,crc,true);lh.setUint32(18,d.length,true);lh.setUint32(22,d.length,true);lh.setUint16(26,nm.length,true);lh.setUint16(28,0,true);
     parts.push(new Uint8Array(lh.buffer),nm,d);
     const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);ch.setUint16(12,0,true);ch.setUint16(14,0x21,true);ch.setUint32(16,crc,true);ch.setUint32(20,d.length,true);ch.setUint32(24,d.length,true);ch.setUint16(28,nm.length,true);ch.setUint32(42,off,true);
@@ -399,20 +438,28 @@ function docxXml(r){const f=FORMS[r.form],t=totals(r),isB=r.form==="bm02a";
   b+=para("Đề nghị của đơn vị:",{b:1})+para(r.dn||"........................................................................");
   b+=para("");
   const S=[4950,4950];
-  b+=`<w:tbl><w:tblPr><w:tblW w:w="9900" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="4950"/><w:gridCol w:w="4950"/></w:tblGrid>${row(cell(S[0],para("Xác nhận của đơn vị",{b:1,jc:"center"}))+cell(S[1],para("TM. Đoàn kiểm tra",{b:1,jc:"center"})+para("\n\n\n"+(r.inspector||""),{jc:"center"})))}</w:tbl>`;
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${b}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="850" w:right="850" w:bottom="850" w:left="1130" w:header="425" w:footer="425" w:gutter="0"/></w:sectPr></w:body></w:document>`}
+  const pic=(rid,n)=>`<w:p><w:pPr><w:spacing w:before="60" w:after="60"/><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="1800000" cy="720000"/><wp:docPr id="${n}" name="Chu ky ${n}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${n}" name="sig${n}.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="1800000" cy="720000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+  const sg=(title,sig,rid,n,name)=>para(title,{b:1,jc:"center"})+para("(Ký, ghi rõ họ tên)",{i:1,jc:"center",sz:20})+(sig?pic(rid,n):para("\n\n"))+para(name||"",{jc:"center",b:1});
+  b+=`<w:tbl><w:tblPr><w:tblW w:w="9900" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="4950"/><w:gridCol w:w="4950"/></w:tblGrid>${row(cell(S[0],sg("Xác nhận của đơn vị",r.sigUnit,"rIdS1",1,r.unitSigner))+cell(S[1],sg("TM. Đoàn kiểm tra",r.sigInsp,"rIdS2",2,r.inspector)))}</w:tbl>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>${b}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="850" w:right="850" w:bottom="850" w:left="1130" w:header="425" w:footer="425" w:gutter="0"/></w:sectPr></w:body></w:document>`}
+const sigBytes=u=>Uint8Array.from(atob(u.split(",")[1]),c=>c.charCodeAt(0));
+const relsXml=r=>`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${r.sigUnit?'<Relationship Id="rIdS1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/sig1.png"/>':""}${r.sigInsp?'<Relationship Id="rIdS2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/sig2.png"/>':""}</Relationships>`;
+const mediaFiles=r=>[r.sigUnit&&{name:"word/media/sig1.png",data:sigBytes(r.sigUnit)},r.sigInsp&&{name:"word/media/sig2.png",data:sigBytes(r.sigInsp)}].filter(Boolean);
 async function exportWord(r){
   const slug=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const name=`Phieu-KSNK_${slug(r.unit)||"don-vi"}_${r.date||""}.docx`;
   let blob;try{blob=makeZip([
-    {name:"[Content_Types].xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'},
+    {name:"[Content_Types].xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'},
     {name:"_rels/.rels",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'},
-    {name:"word/document.xml",data:docxXml(r)}])}catch(e){return toast("Không tạo được file Word")}
+    {name:"word/document.xml",data:docxXml(r)},{name:"word/_rels/document.xml.rels",data:relsXml(r)},...mediaFiles(r)])}catch(e){toast("Không tạo được file Word");return false}
   try{const c=window.claude&&window.claude.use?await window.claude.use("downloads"):null;
-    if(c){await c.save({filename:name,data:blob});toast("Đã lưu "+name);return}}
-  catch(e){if(e&&e.code==="declined")return;}
-  try{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast("Đã tạo "+name+". Không thấy file thì dùng nút Sao chép dán vào Word")}
-  catch(e){toast("Không tải được, hãy dùng nút Sao chép dán vào Word")}}
+    if(c){await c.save({filename:name,data:blob});toast("Đã lưu "+name);return true}}
+  catch(e){if(e&&e.code==="declined")return false;}
+  try{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast("Đã tạo "+name+". Không thấy file thì dùng nút Sao chép dán vào Word");return true}
+  catch(e){toast("Không tải được, hãy dùng nút Sao chép dán vào Word");return false}}
+async function doWord(){const r=cr();const ok=await exportWord(r);if(!ok||ST.view==="hist")return;
+  if(signMissing(r).length)toast("Đã xuất bản nháp. Chưa đủ chữ ký/họ tên nên chưa lưu vào lịch sử");
+  else{addHist(r);toast("Đã xuất Word và lưu vào lịch sử")}}
 function exportWordOld(r){
   const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Phiếu kiểm tra KSNK</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>@page{size:21cm 29.7cm;margin:1.5cm 1.5cm 1.5cm 2cm}body{font-family:"Times New Roman",serif;font-size:12pt}table{border-collapse:collapse}td,th{font-size:11pt}</style></head><body>${docBody(r)}</body></html>`;
   const slug=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -436,7 +483,8 @@ function copy(text,msg){
 function refreshItem(code){const r=rec(),it=form().items.find(i=>i.code===code),el=document.getElementById("it-"+code.replace(".","_"));if(el){el.outerHTML=itemCard(it,r)}refreshTop()}
 function refreshTop(){const r=rec(),t=totals(r);const p=document.querySelector(".top .pill");if(p)p.textContent=fmt(t.t)+"/"+fmt(t.max);
   document.querySelectorAll(".chip").forEach(c=>{const k=c.dataset.t;if(/^\d+$/.test(k)){const o=t.secs[+k];c.querySelector("small").textContent=`${o.d}/${o.n}`}})}
-function render(){$("#app").innerHTML=ST.view==="home"?homeView():checkView()}
+function render(){$("#app").innerHTML=ST.view==="home"?homeView():ST.view==="hist"?histView():checkView();
+  if(ST.view==="check"&&ST.tab==="result"){initPads();updSignState()}}
 
 /* ===== SỰ KIỆN ===== */
 document.addEventListener("click",e=>{
@@ -449,10 +497,13 @@ document.addEventListener("click",e=>{
   if(a==="tab"){ST.tab=b.dataset.t;render();window.scrollTo(0,0);return}
   if(a==="go"){const f=form(),o=["info",...f.sections.map((_,i)=>String(i)),"result"];ST.tab=o[o.indexOf(ST.tab)+ +b.dataset.d];render();window.scrollTo(0,0);return}
   if(a==="nx"){const r=rec(),g=autoNx(r);r.nx=(!r.nx||r.nx.startsWith("Kết quả kiểm tra"))?g:r.nx+"\n\n"+g;save();render();toast("Đã đưa kết quả vào phần nhận xét");return}
-  if(a==="word")return exportWord(rec());
-  if(a==="copyword")return copyWordHtml(rec());
-  if(a==="copy")return copy(reportText(rec()),"Đã sao chép báo cáo");
-  if(a==="copytsv")return copy(reportTSV(rec()),"Đã sao chép bảng điểm");
+  if(a==="word")return doWord();
+  if(a==="copyword")return copyWordHtml(cr());
+  if(a==="copy")return copy(reportText(cr()),"Đã sao chép báo cáo");
+  if(a==="copytsv")return copy(reportTSV(cr()),"Đã sao chép bảng điểm");
+  if(a==="sigclear"){const r=rec(),k=b.dataset.key;r[k]="";r.upd=Date.now();save();render();return}
+  if(a==="hopen"){const x=ST.hist.find(y=>y.id===b.dataset.id);if(x){ST.h=x.snap;ST.hts=x.ts;ST.view="hist";render();window.scrollTo(0,0)}return}
+  if(a==="hdel"){if(ST.delH===b.dataset.id){ST.hist=ST.hist.filter(y=>y.id!==b.dataset.id);ST.delH=null;saveH()}else ST.delH=b.dataset.id;render();return}
   const card=b.closest("[data-code]");if(!card)return;
   const r=rec(),it=form().items.find(i=>i.code===card.dataset.code),st=stOf(r,it);
   if(a==="cnt"){const c=it.counter,cur=st.n==null?(it.kind==="bins"?0:Math.min(c.max,0)):st.n;st.n=Math.max(0,Math.min(c.max,cur+ +b.dataset.d));const v=auto(it,st);if(v!=null)st.s=v}
@@ -474,7 +525,7 @@ document.addEventListener("change",e=>{
 });
 document.addEventListener("input",e=>{
   const x=e.target,a=x.dataset&&x.dataset.a;if(!a)return;
-  if(a==="fld"){const r=rec();r[x.dataset.k]=x.value;r.upd=Date.now();save();if(x.dataset.k==="unit"){const h=document.querySelector(".top h1");if(h)h.textContent=x.value||form().short}}
+  if(a==="fld"){const r=rec();r[x.dataset.k]=x.value;r.upd=Date.now();save();updSignState();if(x.dataset.k==="unit"){const h=document.querySelector(".top h1");if(h)h.textContent=x.value||form().short}}
   if(a==="note"){const r=rec(),it=form().items.find(i=>i.code===x.closest("[data-code]").dataset.code);stOf(r,it).note=x.value;save()}
 });
 render();
