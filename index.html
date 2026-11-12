@@ -1,5 +1,5 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a6b6b"><style>[hidden]{display:none!important}:root{color-scheme:light}</style><title>Kiểm tra KSNK</title>
-
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: ứng dụng một cột cho điện thoại; thanh trên cố định (điểm), chip chuyển mục, thẻ từng tiêu chí, thanh dưới Trước/Tiếp */
@@ -88,7 +88,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .warn{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:12px}
 @media (prefers-reduced-motion:no-preference){.meter i{transition:width .25s}}
 </style>
-</head><body><div id="app" class="wrap"></div>
+<div id="app" class="wrap"></div>
 <div id="toast" class="toast" hidden></div>
 <script>
 /* ===== DỮ LIỆU BIỂU MẪU ===== */
@@ -457,9 +457,13 @@ async function exportWord(r){
   catch(e){if(e&&e.code==="declined")return false;}
   try{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast("Đã tạo "+name+". Không thấy file thì dùng nút Sao chép dán vào Word");return true}
   catch(e){toast("Không tải được, hãy dùng nút Sao chép dán vào Word");return false}}
-async function doWord(){const r=cr();const ok=await exportWord(r);if(!ok||ST.view==="hist")return;
-  if(signMissing(r).length)toast("Đã xuất bản nháp. Chưa đủ chữ ký/họ tên nên chưa lưu vào lịch sử");
-  else{addHist(r);toast("Đã xuất Word và lưu vào lịch sử")}}
+async function doWord(){const r=cr();const miss=signMissing(r),inHist=ST.view==="hist";
+  if(!inHist&&!miss.length)addHist(r);
+  const ok=await exportWord(r);if(inHist)return;
+  const n=ST.hist.length;
+  if(miss.length){toast("CHƯA lưu lịch sử, còn thiếu: "+miss.join(", "),6000)}
+  else if(ok)toast("Đã xuất Word và lưu vào lịch sử (hiện có "+n+" phiếu)",4000)
+  else toast("Đã lưu vào lịch sử (hiện có "+n+" phiếu) nhưng chưa tải được file Word",5000)}
 function exportWordOld(r){
   const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Phiếu kiểm tra KSNK</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>@page{size:21cm 29.7cm;margin:1.5cm 1.5cm 1.5cm 2cm}body{font-family:"Times New Roman",serif;font-size:12pt}table{border-collapse:collapse}td,th{font-size:11pt}</style></head><body>${docBody(r)}</body></html>`;
   const slug=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -476,7 +480,7 @@ function summaryTSV(){let s="Đơn vị\tBiểu mẫu\tNgày\tNgười kiểm tr
   ST.recs.slice().reverse().forEach(r=>{const t=totals(r);s+=[r.unit,FORMS[r.form].short,vdate(r.date),r.inspector,t.t,t.max,Math.round(t.pct*10)/10,t.done+"/"+t.n].join("\t")+"\n"});return s}
 
 /* ===== TIỆN ÍCH ===== */
-let tt;function toast(m){const e=$("#toast");e.textContent=m;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,2200)}
+let tt;function toast(m,ms){const e=$("#toast");e.textContent=m;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,ms||2200)}
 function copy(text,msg){
   const fb=()=>{const a=document.createElement("textarea");a.value=text;a.style.cssText="position:fixed;opacity:0";document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}a.remove();toast(ok?msg:"Không sao chép được, hãy chụp màn hình")};
   try{navigator.clipboard.writeText(text).then(()=>toast(msg),fb)}catch(e){fb()}}
